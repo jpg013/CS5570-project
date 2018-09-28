@@ -1,8 +1,7 @@
-from transaction import Transaction
+from history import History
 
 def main():
-  tx1 = Transaction()
-  tx1.make_data_items()
+  hist = History()
 
 if __name__== "__main__":
   main()
