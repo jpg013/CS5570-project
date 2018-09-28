@@ -5,11 +5,15 @@ from app_config import AppConfig
 class History:
   """ History class """
   
-  # Stores the list of transactions
+  # list of transactions in the history
   transactions = []
   
+  # complete history of all transaction data operations including their commit/abort operations
+  complete_history = []
+
   def __init__(self):
-    self.make_history_transactions()
+    self.generate_transactions()
+    self.interleave_transaction_history()
 
   def get_transaction_cardinality(self):
     # Return the number of transactions for the history
@@ -32,7 +36,7 @@ class History:
       AppConfig.get("data_item").get("max")
     )
 
-  def make_history_transactions(self):
+  def generate_transactions(self):
     # Generate random number of transactions with data items
     transaction_cardinality = self.get_transaction_cardinality()
 
@@ -42,9 +46,10 @@ class History:
     while len(self.transactions) < transaction_cardinality:
       # make the random data items for the transaction
       tx_data_items = self.make_data_items_for_tx()
-      self.transactions.append(Transaction(tx_data_items))
+      tx_id = random.randint(1, 1000)
+      self.transactions.append(Transaction(tx_id, tx_data_items))
+      
 
-  
   def make_data_items_for_tx(self):
     # returns list of data_items
     data_items = []
@@ -60,6 +65,32 @@ class History:
         data_items.append(data)
     
     return data_items
+
+  def prune_history_transactions(self, history_transactions):
+    return list(filter(lambda tx: tx.is_finished() == False, history_transactions))
+
+  def get_next_transaction_operation(self, history_transactions):
+    next_op = None
+    
+    curr = random.randint(0, len(history_transactions) - 1)
+    tx = history_transactions[curr]
+
+    return tx.next()
+
+  def interleave_transaction_history(self):
+    if len(self.transactions) == 0:
+      raise ValueError('transactions must have length')
+
+    history_transactions = self.transactions[:]
+    while len(history_transactions) > 0:
+      op = self.get_next_transaction_operation(history_transactions)
+
+      if op is None:
+        raise ValueError('invalid transaction operation')
+      
+      self.complete_history.append(op)
+      history_transactions = self.prune_history_transactions(history_transactions)
+
 
 
    

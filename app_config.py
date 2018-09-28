@@ -2,7 +2,7 @@ class AppConfig:
   __config = {
     "transaction": {
       "min": 1,
-      "max": 4
+      "max": 2
     },
     "transaction_data": {
       "min": 1,

@@ -12,9 +12,40 @@ typeSwitcher = {
   1: OperationType.WRITE,
   2: OperationType.COMMIT,
   3: OperationType.ABORT,  
-} 
+}
 
-class DataOperation:
+class TransactionOperation:
+  def pretty_format(self):
+    formatted_item = ""
+  
+    if self.operation_type == OperationType.READ:
+      formatted_item += "read__" + str(self.transaction_id) + "__(" + str(self.data_item) + ")"
+    elif self.operation_type == OperationType.WRITE:
+      formatted_item += "write__" + str(self.transaction_id) + "__(" + str(self.data_item) + ")"
+    elif self.operation_type == OperationType.ABORT:
+      formatted_item += "abort__" + str(self.transaction_id)
+    elif self.operation_type == OperationType.COMMIT:
+      formatted_item += "commit__" + str(self.transaction_id)
+
+    return formatted_item  
+
+class TerminalOperation(TransactionOperation):
+  """ TerminalOperation class holds two properties, data_item (Int) and and operation type (String). """
+  
+  # Stores the operation type, corresponds to the OperationType enum
+  operation_type = None
+
+  # Stores the transaction id
+  transaction_id = None  
+
+  def __init__(self, transaction_id):
+    if transaction_id is None:
+      raise ValueError('transaction_id must be defined.')
+    
+    self.operation_type = typeSwitcher.get(random.randint(2,3))
+    self.transaction_id = transaction_id
+
+class DataOperation(TransactionOperation):
   """ DataOperation class holds two properties, data_item (Int) and and operation type (String). """
   
   # Stores data item that the operation acts on. It can be None if the Operation type is COMMIT or ABORT
@@ -22,38 +53,55 @@ class DataOperation:
 
   # Stores the operation type, corresponds to the OperationType enum
   operation_type = None
+
+  # Stores the transaction id
+  transaction_id = None
   
-  def __init__(self, data_item, operation_type):
+  def __init__(self, data_item, operation_type, transaction_id):
     if data_item is None:
       raise ValueError('data_item must be defined.')
 
     if operation_type is None:
       raise ValueError('operation_type must be defined.')
+
+    if transaction_id is None:
+      raise ValueError('transaction_id must be defined.')
     
     self.data_item = data_item
     self.operation_type = operation_type
+    self.transaction_id = transaction_id
 
 class Transaction:
   """ Transaction class """
   
-  # Stores the list of (1 - 2 / data items) operations (read/write) for the transaction
-  transaction_operations = None
+  # Map of data_item to list of transactions
+  tx_op_map = {}
+
+  # List of randomly interleaved data operations for the transaction
+  interleaved_data_operations = []
   
   # Stores the list of (1 - 4) data items for the transaction
   data_items = None
 
-  def __init__(self, data_items):
+  # cursor variable for iterating through the interleaved data operations
+  cursor = 0
+
+  # Transaction ID
+  transaction_id = None
+
+  def __init__(self, id, data_items):
     if (type(data_items)) is not list:
       raise ValueError('data_items must be defined.')
 
     if len(data_items) < 1:
       raise ValueError('data_items list must have at least one item')
 
+    self.transaction_id = id
     self.data_items = data_items
-    self.transaction_operations = [] # set default
-    self.build_data_operations()
+    self.build_transaction_operation_map()
+    self.interleave_operations()
   
-  def build_data_operations(self):
+  def build_transaction_operation_map(self):
     if self.data_items is None:
       raise ValueError('data_items must be defined.')
 
@@ -61,24 +109,70 @@ class Transaction:
       raise ValueError('data_items list must have at least one item')
     
     for data_item in self.data_items:
-       # Each data item may have 1 - 2 operations per transaction on it
-      tx_operation_count = random.randint(1, 2)
+      # init the map item
+
+      self.tx_op_map[data_item] = []
+       
+      # Each data item may have 1 - 2 operations per transaction on it
+      tx_op_count = random.randint(1, 2)
       
-      if tx_operation_count is 1:
-        self.transaction_operations.append(self.generate_random_read_write_op(data_item))
+      if tx_op_count is 1:
+        op_type = typeSwitcher.get(random.randint(0,1))
+        self.tx_op_map[data_item].append(DataOperation(data_item, op_type, self.transaction_id))
       else:
-        self.transaction_operations.append(DataOperation(data_item, OperationType.READ))
-        self.transaction_operations.append(DataOperation(data_item, OperationType.WRITE))
+        self.tx_op_map[data_item].append(DataOperation(data_item, OperationType.READ, self.transaction_id))
+        self.tx_op_map[data_item].append(DataOperation(data_item, OperationType.WRITE, self.transaction_id))
 
-    # Add a commit or abort operation
-    self.transaction_operations.append(self.generate_terminal_op)
+  def get_tx_op_count(self):
+    count = 0
 
-  def generate_random_read_write_op(self, data_item):
-    operation_type = typeSwitcher.get(random.randint(1,2))
-    return DataOperation(data_item, operation_type)
+    for key, value in self.tx_op_map.items():
+      count += len(value)
 
-  def generate_terminal_op(self, data_item):
-    operation_type = typeSwitcher.get(random.randint(3,4))
-    return DataOperation(data_item, operation_type)
+    return count
 
-   
+  def flatten_tx_op_map(self):
+    arr = []
+
+    for key, value in self.tx_op_map.items():
+      arr.append(value[:])
+
+    return arr
+
+  def interleave_operations(self):
+    total_count = self.get_tx_op_count()
+    interleaved_operations = []
+    items = self.flatten_tx_op_map()
+    
+    while len(items) > 0:
+      idx = random.randint(0, len(items) - 1)
+
+      sub_item = items[idx]
+
+      if len(sub_item) == 0:
+        items.remove(sub_item)
+        continue
+
+      interleaved_operations.append(sub_item.pop(0))
+
+    if len(interleaved_operations) != total_count:
+      raise Exception('interleaved_operations length different than total count')
+
+    # Append the TerminalOperation
+    interleaved_operations.append(TerminalOperation(self.transaction_id))
+
+    self.interleaved_data_operations = interleaved_operations
+
+  def next(self):
+    """ iterate the next data operation for the transaction. Will return None if iterator is finished """
+    if self.is_finished():
+      return None
+
+    op = self.interleaved_data_operations[self.cursor]
+    
+    self.cursor += 1
+
+    return op
+    
+  def is_finished(self):
+   return self.cursor >= len(self.interleaved_data_operations)
