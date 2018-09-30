@@ -1,15 +1,23 @@
 import unittest
-from transaction import Transaction
+import transaction
+from enum import Enum
 
-class TransactionTest(unittest.TestCase):
-  def setUp(self):
-    self.tx = Transaction()
+class OperationTypeTest (unittest.TestCase):
+  def test_class(self):
+    self.assertTrue(issubclass(transaction.OperationType, Enum))
 
-  def test_transaction_defaults(self):
-    # verify defaults 
-    self.assertEqual(self.tx.commit_on_complete, True)
-    self.assertGreaterEqual(self.tx.data_item_count, 1)
-    self.assertLessEqual(self.tx.data_item_count, 4)
+  def test_enum_members(self):
+    self.assertIsNotNone(transaction.OperationType.READ)
+    self.assertIsNotNone(transaction.OperationType.WRITE)
+    self.assertIsNotNone(transaction.OperationType.COMMIT)
+    self.assertIsNotNone(transaction.OperationType.ABORT)
+
+  def test_has_value(self):
+    self.assertFalse(transaction.OperationType.has_value('bad_value'))
+    self.assertTrue(transaction.OperationType.has_value(transaction.OperationType.READ))
+    self.assertTrue(transaction.OperationType.has_value(transaction.OperationType.WRITE))
+    self.assertTrue(transaction.OperationType.has_value(transaction.OperationType.COMMIT))
+    self.assertTrue(transaction.OperationType.has_value(transaction.OperationType.ABORT))
 
 if __name__ == '__main__':
   unittest.main()

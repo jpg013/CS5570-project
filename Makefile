@@ -4,5 +4,5 @@ run:
 	python3 main.py
 
 test:
-	python -m unittest discover -s ./ -p '*_test.py'	
+	python3 -m unittest discover -s ./ -p '*_test.py'	
 

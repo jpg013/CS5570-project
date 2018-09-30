@@ -2,10 +2,14 @@ import random
 from enum import Enum
 
 class OperationType(Enum):
-  READ   = 'READ'
-  WRITE  = 'WRITE'
-  COMMIT = 'COMMIT'
-  ABORT  = 'ABORT'
+  READ   = "READ"
+  WRITE  = "WRITE"
+  COMMIT = "COMMIT"
+  ABORT  = "ABORT"
+
+  @classmethod
+  def has_value(cls, value):
+    return any(value == item for item in cls)
 
 typeSwitcher = {
   0: OperationType.READ,
@@ -19,13 +23,13 @@ class TransactionOperation:
     formatted_item = ""
   
     if self.operation_type == OperationType.READ:
-      formatted_item += "read__" + str(self.transaction_id) + "__(" + str(self.data_item) + ")"
+      formatted_item += "read_" + str(self.transaction_id) + "_[" + str(self.data_item) + "]"
     elif self.operation_type == OperationType.WRITE:
-      formatted_item += "write__" + str(self.transaction_id) + "__(" + str(self.data_item) + ")"
+      formatted_item += "write_" + str(self.transaction_id) + "_[" + str(self.data_item) + "]"
     elif self.operation_type == OperationType.ABORT:
-      formatted_item += "abort__" + str(self.transaction_id)
+      formatted_item += "abort_" + str(self.transaction_id)
     elif self.operation_type == OperationType.COMMIT:
-      formatted_item += "commit__" + str(self.transaction_id)
+      formatted_item += "commit_" + str(self.transaction_id)
 
     return formatted_item  
 
@@ -66,6 +70,9 @@ class DataOperation(TransactionOperation):
 
     if transaction_id is None:
       raise ValueError('transaction_id must be defined.')
+
+    if OperationType.has_value(operation_type) is False:
+      raise ValueError('{} is not of enum type OperationType'.format(operation_type))
     
     self.data_item = data_item
     self.operation_type = operation_type
