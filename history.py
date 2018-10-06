@@ -8,12 +8,12 @@ class History:
   # list of transactions in the history
   transactions = []
   
-  # complete history of all transaction data operations including their commit/abort operations
-  complete_history = []
+  # history scheduled_transactions 
+  scheduled_transactions = []
 
   def __init__(self):
     self.generate_transactions()
-    self.interleave_transaction_history()
+    self.schedule_transactions()
 
   def get_transaction_cardinality(self):
     # Return the number of transactions for the history
@@ -39,25 +39,19 @@ class History:
   def generate_transactions(self):
     # Generate random number of transactions with data items
     transaction_cardinality = self.get_transaction_cardinality()
-
-    if transaction_cardinality < AppConfig.get("transaction").get("min") or transaction_cardinality > AppConfig.get("transaction").get("max"):
-      raise ValueError('invalid transaction_cardinality value')
-
+    tx_id_counter = 1
+    
     while len(self.transactions) < transaction_cardinality:
       # make the random data items for the transaction
       tx_data_items = self.make_data_items_for_tx()
-      tx_id = random.randint(1, 1000)
-      self.transactions.append(Transaction(tx_id, tx_data_items))
-      
+      self.transactions.append(Transaction(tx_id_counter, tx_data_items))
+      tx_id_counter += 1
 
   def make_data_items_for_tx(self):
     # returns list of data_items
     data_items = []
     data_cardinality = self.get_transaction_data_cardinality()
 
-    if data_cardinality < AppConfig.get("transaction_data").get("min") or data_cardinality > AppConfig.get("transaction_data").get("max"):
-      raise ValueError('invalid data_cardinality value')
-    
     while len(data_items) < data_cardinality:
       data = self.generate_data_item()
       
@@ -66,31 +60,31 @@ class History:
     
     return data_items
 
-  def prune_history_transactions(self, history_transactions):
-    return list(filter(lambda tx: tx.is_finished() == False, history_transactions))
-
-  def get_next_transaction_operation(self, history_transactions):
-    next_op = None
-    
-    curr = random.randint(0, len(history_transactions) - 1)
-    tx = history_transactions[curr]
-
-    return tx.next()
-
-  def interleave_transaction_history(self):
+  def schedule_transactions(self):
     if len(self.transactions) == 0:
       raise ValueError('transactions must have length')
 
-    history_transactions = self.transactions[:]
-    while len(history_transactions) > 0:
-      op = self.get_next_transaction_operation(history_transactions)
+    ops = []
 
-      if op is None:
-        raise ValueError('invalid transaction operation')
-      
-      self.complete_history.append(op)
-      history_transactions = self.prune_history_transactions(history_transactions)
+    self.scheduled_transactions = []
 
+    for tx in self.transactions:
+      ops = ops + tx.data_operations
 
+    random.shuffle(ops)
+    
+    while len(ops) > 0:
+      op = ops.pop(0)
 
-   
+      if op.is_abort() or op.is_commit():
+        # Require all other data operations for tx to be completed
+        in_progress = any(op.transaction_id == item.transaction_id for item in ops)
+
+        if in_progress:
+          ops.append(op)
+          random.shuffle(ops)
+        else:
+          self.scheduled_transactions.append(op)  
+      else:
+        self.scheduled_transactions.append(op)
+

@@ -1,3 +1,6 @@
+import random
+from enum import Enum
+
 class OperationType(Enum):
   READ   = "READ"
   WRITE  = "WRITE"
@@ -27,7 +30,7 @@ class DataOperation:
   # Stores the transaction id
   transaction_id = None
   
-  def __init__(self, operation_type, transaction_id, data_item):
+  def __init__(self, operation_type, transaction_id, data_item=None):
     if operation_type is None:
       raise ValueError('operation_type must be defined.')
 
@@ -40,8 +43,15 @@ class DataOperation:
     self.operation_type = operation_type
     self.transaction_id = transaction_id
 
+    # If operation type is Abort/Commit it will not have associated data item
     if data_item is not None:
       self.data_item = data_item
+
+  def is_abort(self):
+    return self.operation_type is OperationType.ABORT
+
+  def is_commit(self):
+    return self.operation_type is OperationType.COMMIT
 
   def pretty_format(self):
     formatted_item = ""
@@ -56,3 +66,17 @@ class DataOperation:
       formatted_item += "commit_" + str(self.transaction_id)
 
     return formatted_item  
+
+# Helper method to randomly generate list of read/write data operations
+def generate_read_writes_types(): 
+  # Each data item may have a read, write, or both
+  count = random.randint(1, 2)
+      
+  if count is 1:
+    return [type_switcher.get(random.randint(0,1))]
+  else:
+    return [OperationType.READ, OperationType.WRITE]
+
+def generate_commit_abort_type():
+  return type_switcher.get(random.randint(2,3))
+
