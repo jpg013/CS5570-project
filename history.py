@@ -8,12 +8,12 @@ class History:
   # list of transactions in the history
   transactions = []
   
-  # history scheduled_transactions 
-  scheduled_transactions = []
+  # çomplete schedule of all transaction data operations including commits/aborts 
+  schedule = []
 
   def __init__(self):
     self.generate_transactions()
-    self.schedule_transactions()
+    self.make_schedule()
 
   def get_transaction_cardinality(self):
     # Return the number of transactions for the history
@@ -60,13 +60,20 @@ class History:
     
     return data_items
 
-  def schedule_transactions(self):
+  def pretty_print(self):
+    for item in self.schedule:
+      if item == self.schedule[-1]:
+        print(item.pretty_format())
+      else:
+        print(item.pretty_format(), end=" --> ")
+  
+  def make_schedule(self):
     if len(self.transactions) == 0:
       raise ValueError('transactions must have length')
 
     ops = []
 
-    self.scheduled_transactions = []
+    self.schedule = []
 
     for tx in self.transactions:
       ops = ops + tx.data_operations
@@ -84,7 +91,7 @@ class History:
           ops.append(op)
           random.shuffle(ops)
         else:
-          self.scheduled_transactions.append(op)  
+          self.schedule.append(op)  
       else:
-        self.scheduled_transactions.append(op)
+        self.schedule.append(op)
 
