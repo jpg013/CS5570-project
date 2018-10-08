@@ -1,51 +1,46 @@
 from transaction import Transaction
 import random
 from app_config import AppConfig
+import sys
 
 class History:
   """ History class """
   
-  # list of transactions in the history
-  transactions = []
-  
-  # history scheduled_transactions 
-  scheduled_transactions = []
-
   def __init__(self):
+    # list of transactions in the history
+    self.transactions = []
+    
+    # çomplete schedule of all transaction data operations including commits/aborts 
+    self.schedule = []
+    
     self.generate_transactions()
-    self.schedule_transactions()
+    self.make_schedule()
 
   def get_transaction_cardinality(self):
     # Return the number of transactions for the history
     return random.randint(
-      AppConfig.get("transaction").get("min"), 
-      AppConfig.get("transaction").get("max")
+      AppConfig.get("transaction_count").get("min"), 
+      AppConfig.get("transaction_count").get("max")
     )
 
   def get_transaction_data_cardinality(self):
     # Return the number of transaction data items for the history
     return random.randint(
-      AppConfig.get("transaction_data").get("min"), 
-      AppConfig.get("transaction_data").get("max")
+      AppConfig.get("transaction_data_count").get("min"), 
+      AppConfig.get("transaction_data_count").get("max")
     )
 
   def generate_data_item(self):
     # Return data item value
-    return random.randint(
-      AppConfig.get("data_item").get("min"), 
-      AppConfig.get("data_item").get("max")
-    )
+    return random.sample(AppConfig.get("data_set"), 1)[0]
 
   def generate_transactions(self):
     # Generate random number of transactions with data items
     transaction_cardinality = self.get_transaction_cardinality()
-    tx_id_counter = 1
     
-    while len(self.transactions) < transaction_cardinality:
-      # make the random data items for the transaction
+    for idx in range(transaction_cardinality):
       tx_data_items = self.make_data_items_for_tx()
-      self.transactions.append(Transaction(tx_id_counter, tx_data_items))
-      tx_id_counter += 1
+      self.transactions.append(Transaction(idx+1, tx_data_items))
 
   def make_data_items_for_tx(self):
     # returns list of data_items
@@ -60,31 +55,36 @@ class History:
     
     return data_items
 
-  def schedule_transactions(self):
+  def pretty_print(self):
+    for item in self.schedule:
+      if item is self.schedule[-1]:
+        print(item.pretty_format())
+      else:
+        print(item.pretty_format(), end=" --> ")
+  
+  def make_schedule(self):
     if len(self.transactions) == 0:
       raise ValueError('transactions must have length')
 
     ops = []
 
-    self.scheduled_transactions = []
-
     for tx in self.transactions:
       ops = ops + tx.data_operations
 
     random.shuffle(ops)
-    
+
     while len(ops) > 0:
       op = ops.pop(0)
-
+      
       if op.is_abort() or op.is_commit():
         # Require all other data operations for tx to be completed
         in_progress = any(op.transaction_id == item.transaction_id for item in ops)
 
-        if in_progress:
+        if in_progress == False:
+          self.schedule.append(op)  
+        else:
           ops.append(op)
           random.shuffle(ops)
-        else:
-          self.scheduled_transactions.append(op)  
       else:
-        self.scheduled_transactions.append(op)
+        self.schedule.append(op)
 

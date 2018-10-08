@@ -21,15 +21,6 @@ type_switcher = {
 class DataOperation:
   """ DataOperation class holds two properties, data_item (Int) and and operation type (String). """
   
-  # Stores data item that the operation acts on. It can be None if the Operation type is COMMIT or ABORT
-  data_item = None
-
-  # Stores the operation type, corresponds to the OperationType enum
-  operation_type = None
-
-  # Stores the transaction id
-  transaction_id = None
-  
   def __init__(self, operation_type, transaction_id, data_item=None):
     if operation_type is None:
       raise ValueError('operation_type must be defined.')
@@ -44,14 +35,13 @@ class DataOperation:
     self.transaction_id = transaction_id
 
     # If operation type is Abort/Commit it will not have associated data item
-    if data_item is not None:
-      self.data_item = data_item
+    self.data_item = data_item
 
   def is_abort(self):
-    return self.operation_type is OperationType.ABORT
+    return self.operation_type == OperationType.ABORT
 
   def is_commit(self):
-    return self.operation_type is OperationType.COMMIT
+    return self.operation_type == OperationType.COMMIT
 
   def pretty_format(self):
     formatted_item = ""

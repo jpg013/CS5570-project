@@ -1,17 +1,17 @@
 class AppConfig:
   __config = {
-    "transaction": {
+    # Number of transactions per history
+    "transaction_count": {
       "min": 1,
       "max": 4
     },
-    "transaction_data": {
-      "min": 1,
-      "max": 1
-    },
-    "data_item": {
+    # Number of data_items per transaction
+    "transaction_data_count": {
       "min": 1,
       "max": 4
-    }
+    },
+    # Set of allowed data items
+    "data_set": set(["w", "x", "y", "z"])
   }
 
   @staticmethod
