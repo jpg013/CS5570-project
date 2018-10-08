@@ -37,6 +37,21 @@ class DataOperation:
     # If operation type is Abort/Commit it will not have associated data item
     self.data_item = data_item
 
+  def __hash__(self):
+        return hash(str(self.operation_type) + str(self.transaction_id) + str(self.data_item))
+
+  def __eq__(self, other):
+      return (
+          (self.operation_type == other.operation_type) and
+          (self.transaction_id == other.transaction_id) and
+          (self.data_item == other.data_item)
+      )
+
+  def __ne__(self, other):
+      # Not strictly necessary, but to avoid having both x==y and x!=y
+      # True at the same time
+      return not(self == other)
+
   def is_abort(self):
     return self.operation_type == OperationType.ABORT
 

@@ -64,12 +64,18 @@ class SerializationGraph:
         # list of SerializationGraphCycles.  
         self.cycles = []
 
+        # dictonary of key/val = data_operation:data_operation where the key
+        # is a data_operation and the value is the corresponding data operation that
+        # functionally depends on the keyed operation
+        self.functional_dependencies = {}
     
+        # build and construct graph, find any existing cycles
         self.build_graph_nodes(history)
         self.construct_graph(history)
         self.find_all_cycles()
         self.pretty_print_graph()
         print(self.cycles)
+        print(self.functional_dependencies)
 
     def check_dependencies_for_cycle(self, parent, child, check_set=None):
         if check_set is None:
@@ -146,6 +152,9 @@ class SerializationGraph:
                 continue
 
             dep_node = self.get_node(dependency.transaction_id)
+
+            # Add data_operations to functional dependencies
+            self.functional_dependencies[val] = dependency
 
             # Add to dependecy set
             self.graph[curr_node].add(dep_node)
