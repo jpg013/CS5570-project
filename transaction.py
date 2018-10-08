@@ -9,20 +9,14 @@ class Transaction:
       each data_operation by calling next() until the tranasction ops are exhausted. 
   """
   
-  data_operations = []
-
-  # Stores the list of data items for the transaction
-  data_items = None
-
-  # Transaction ID
-  transaction_id = None
-
   def __init__(self, id, data_items):
     if (type(data_items)) is not list:
       raise ValueError('data_items must be defined.')
 
     if len(data_items) < 1:
       raise ValueError('data_items list must have at least one item')
+
+    self.data_operations = []
 
     self.transaction_id = id
     self.data_items = data_items
@@ -41,3 +35,10 @@ class Transaction:
 
     # Add a commit / abort data operation at the end
     self.data_operations.append(DataOperation(generate_commit_abort_type(), self.transaction_id, None))
+  
+  def pretty_print(self):
+    for op in self.data_operations:
+        if op is self.data_operations[-1]:
+            print(op.pretty_format())
+        else:
+            print(op.pretty_format(), end=" --> ")
