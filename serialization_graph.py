@@ -89,7 +89,7 @@ class SerializationGraph:
         if len(schedule) is 0:
             return None
 
-        for idx, curr in enumerate(schedule):
+        for curr in schedule:
             # Cannot have functional dependency on different data items
             if curr.data_item != op.data_item:
                 continue
@@ -102,29 +102,15 @@ class SerializationGraph:
             if curr.operation_type == OperationType.READ and op.operation_type == OperationType.READ:
                 continue
 
-            # If a duplicate data operation is found in the schedule that will be the functional dependency
-            # Special cases for same transaction and same data item
-            if curr.transaction_id == op.transaction_id and curr.data_item == op.data_item:
+            if curr.transaction_id == op.transaction_id:
+                # If a duplicate data operation is found in the schedule that will be the functional dependency
+                # Special cases for same transaction and same data item
                 if curr.operation_type == op.operation_type:
                     raise Exception('duplicate data item found in schedule')
-
-                # There's a really interesting case here that I'm not sure about. Consider the scenario
-                # write_4_[x] --> read_4_[x] --> write_2_[x]. Early editions of my code would find there to be 2 conflicts, 
-                # 1) write4(x) && write2(x) and 2) read4(x) && write2(x)
-                # But my head tells me that there is really only 1 conflict 
-                # read4(x) and write2(x) since read4(x) comes after write4(x). Need to verify
-                # For now, check if there are future conflicts for the same transaction / data item
-                # and return if true.
-
-                future_conflict = self.find_conflict(curr, schedule[idx+1:])
-
-                if future_conflict is not None:
-                    return None
                 
-                # Data operations in the same transaction cannot conflict so continue
                 continue
                 
-            # passed all the cases, they conflict
+            # passed all the non-conflicting cases, so they conflict
             return curr
         
         return None

@@ -58,19 +58,22 @@ class DataOperation:
   def is_commit(self):
     return self.operation_type == OperationType.COMMIT
 
-  def pretty_print(self):
-    formatted_item = ""
+  def format_pretty(self):
+      formatted_item = ""
   
-    if self.operation_type == OperationType.READ:
-      formatted_item += "read_" + str(self.transaction_id) + "_[" + str(self.data_item) + "]"
-    elif self.operation_type == OperationType.WRITE:
-      formatted_item += "write_" + str(self.transaction_id) + "_[" + str(self.data_item) + "]"
-    elif self.operation_type == OperationType.ABORT:
-      formatted_item += "abort_" + str(self.transaction_id)
-    elif self.operation_type == OperationType.COMMIT:
-      formatted_item += "commit_" + str(self.transaction_id)
+      if self.operation_type == OperationType.READ:
+          formatted_item += "read_" + str(self.transaction_id) + "_[" + str(self.data_item) + "]"
+      elif self.operation_type == OperationType.WRITE:
+          formatted_item += "write_" + str(self.transaction_id) + "_[" + str(self.data_item) + "]"
+      elif self.operation_type == OperationType.ABORT:
+          formatted_item += "abort_" + str(self.transaction_id)
+      elif self.operation_type == OperationType.COMMIT:
+          formatted_item += "commit_" + str(self.transaction_id)
+      
+      return formatted_item
 
-    print(formatted_item, end="")
+  def pretty_print(self):
+    print(self.format_pretty(), end="")
 
 # Helper method to randomly generate list of read/write data operations
 def generate_read_writes_types(): 

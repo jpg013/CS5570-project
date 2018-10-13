@@ -1,33 +1,6 @@
 from serialization_graph import SerializationGraph
 from graph_path import GraphPath
 
-class SerializationGraphCycle:
-    """SerializationGraphCycle represents a cycle between two serialization graph nodes.
-    The order is not important, however, the nodes must be distinct.
-    """
-  
-    def __init__(self, node_a=None, node_b=None):
-        if node_a is None or node_b is None:
-            raise ValueError('SerializationGraphCycle requires two valid SerializationGraphNodes')
-      
-        if node_a is node_b:
-            raise ValueError('SerializationGraphCycle requires two distinct SerializationGraphNodes')
-
-        self.node_a = node_a
-        self.node_b = node_b
-
-    def is_same(self, node_a, node_b):
-        """Takes 2 SGNodes and returns whether or not the cycle contains these nodes"""
-      
-        # Must be distinct
-        if node_a is node_b:
-            return False
-      
-        return (
-            (self.node_a is node_a or self.node_a is node_b) and 
-            (self.node_b is node_a or self.node_b is node_b)
-        )
-
 class SerializableEngine:
     """ SerializableEngine class """
 
@@ -40,7 +13,6 @@ class SerializableEngine:
   
     def run(self):
         self.serialization_graph = SerializationGraph(self.history)
-        self.serialization_graph.pretty_print()
         self.find_all_graph_cycles()
 
     def find_all_graph_cycles(self): 

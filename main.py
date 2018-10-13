@@ -1,21 +1,22 @@
 from history import History
 from serializable_engine import SerializableEngine
 from token_processor import create_transactions_from_input
+from recoverable_engine import RecoverableEngine
 
 def main():
-    input_str = "w1(x) w2(x) w3(x) w1(x) c1 c2 c3"
+    input_str = "w1(x) c1 r2(x) c2"
 
     token_result_set = create_transactions_from_input(input_str)
     hist = History()
     hist.set_transactions(token_result_set[0])
     hist.set_schedule(token_result_set[1])
     hist.pretty_print()
-    #hist.make_schedule()
-    #hist.generate_transactions()
-    # hist.make_schedule()
+    
+    s_engine = SerializableEngine(hist)
+    s_engine.run()
 
-    engine = SerializableEngine(hist)
-    engine.run()
+    r_engine = RecoverableEngine(hist)
+    r_engine.run()
 
 if __name__== "__main__":
     main()
