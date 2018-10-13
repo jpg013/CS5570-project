@@ -38,7 +38,7 @@ class DataOperation:
     self.data_item = data_item
 
   def __hash__(self):
-        return hash(str(self.operation_type) + str(self.transaction_id) + str(self.data_item))
+        return hash(str(self.transaction_id) + ':' + str(self.operation_type) + ':' + str(self.data_item))
 
   def __eq__(self, other):
       return (
@@ -58,7 +58,7 @@ class DataOperation:
   def is_commit(self):
     return self.operation_type == OperationType.COMMIT
 
-  def pretty_format(self):
+  def pretty_print(self):
     formatted_item = ""
   
     if self.operation_type == OperationType.READ:
@@ -70,7 +70,7 @@ class DataOperation:
     elif self.operation_type == OperationType.COMMIT:
       formatted_item += "commit_" + str(self.transaction_id)
 
-    return formatted_item  
+    print(formatted_item, end="")
 
 # Helper method to randomly generate list of read/write data operations
 def generate_read_writes_types(): 
