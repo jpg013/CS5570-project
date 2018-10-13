@@ -9,22 +9,19 @@ class Transaction:
         each data_operation by calling next() until the tranasction ops are exhausted. 
     """
   
-    def __init__(self, id, data_items):
-        if (type(data_items)) is not list:
-            raise ValueError('data_items must be defined.')
-
-        if len(data_items) < 1:
-            raise ValueError('data_items list must have at least one item')
-
+    def __init__(self, id):
         self.data_operations = []
         self.transaction_id = id
-        self.data_items = data_items
-        self.make_data_operations(data_items)
 
-    def make_data_operations(self, data_items):
+    def set_data_operations(self, data_operations):
+        self.data_operations = data_operations
+
+    def generate_data_operations(self, data_items):
+        if len(data_items) < 1:
+            raise ValueError('data_items list must have at least one item')
+        
         for item in data_items:
-        # Generate random data Operations
-      
+            # Generate random data Operations
             data_ops = list(map(lambda type: DataOperation(type, self.transaction_id, item, ), generate_read_writes_types()))
             self.data_operations = self.data_operations + data_ops
       
@@ -34,7 +31,7 @@ class Transaction:
 
         # Add a commit / abort data operation at the end
         self.data_operations.append(DataOperation(generate_commit_abort_type(), self.transaction_id, None))
-  
+        
     def pretty_print(self):
         for op in self.data_operations:
             op.pretty_print()
