@@ -75,13 +75,12 @@ class GraphPath:
                 print(temp.data.node_id, end=" --> ")
             temp = temp.next
 
-    def unwind_data(self):
+    def get_cycle_set(self):
         temp = self.head
-
-        data = []
+        s = set()
         
         while temp:
-            data.append(temp.data)
+            s.add(temp.data)
             temp = temp.next
 
-        return data
+        return s

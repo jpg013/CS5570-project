@@ -16,6 +16,9 @@ class History:
     def set_transactions(self, transactions):
         self.transactions = transactions
 
+    def set_schedule(self, schedule):
+        self.schedule = schedule
+
     def get_transaction_cardinality(self):
         # Return the number of transactions for the history
         return random.randint(
@@ -64,8 +67,8 @@ class History:
                 print(" --> ", end="")
             else:
                 print("")
-    
-    def make_schedule(self):
+
+    def randomize_schedule(self):
         if len(self.transactions) == 0:
             raise ValueError('transactions must have length')
 

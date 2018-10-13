@@ -1,6 +1,9 @@
 import re
 from data_operation import OperationType, DataOperation
 from transaction import Transaction
+import collections
+
+token_result_set = collections.namedtuple('TokenResultSet', ['transactions', 'scheduel'])
 
 def parse_operation_type(op_char):
     if op_char == 'r':
@@ -16,7 +19,7 @@ def parse_operation_type(op_char):
     
 def parse_transaction_id(t=""):
     digits = re.findall(r'\d+', t)
-    
+
     if len(digits) != 1:
         raise Exception('invalid token - {0}'.format(t))
     
@@ -48,7 +51,7 @@ def create_transactions_from_input(input=''):
         transaction_id = parse_transaction_id(t)
         tx_ids.add(transaction_id)
         data_item = None
-        
+
         if (operation_type is OperationType.READ or operation_type is OperationType.WRITE):
             data_item = parse_data_item(t)
         
@@ -56,11 +59,12 @@ def create_transactions_from_input(input=''):
 
     for tx_id in tx_ids:
         tx = Transaction(tx_id)
-        data_operations = list(filter(lambda x: x.transaction_id == tx_id, data_operations))
-        tx.set_data_operations(data_operations)
+
+        ops = list(filter(lambda x: x.transaction_id == tx_id, data_operations))
+        tx.set_data_operations(ops)
         transactions.append(tx)
 
-    return transactions
+    return token_result_set(transactions, data_operations)
     
 
 

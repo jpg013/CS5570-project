@@ -77,13 +77,22 @@ class SerializableEngine:
         for key in node.edges.keys():
             return self.walk_path(key, path)
 
-    def create_cycle_from_path(self, path=None):
-        if path is None:
-            raise Exception('path must be defined.')
+    def create_cycle_from_path(self, cycle=None):
+        if cycle is None:
+            raise Exception('cycle must be defined.')
 
-        self.cycles.append(path.unwind_data())
+        exists = False
+        for item in self.cycles:
+            if item.get_cycle_set() == cycle.get_cycle_set():
+                exists = True
+                break
 
-        path.pretty_print()
+        if exists is True:
+            return
+        
+        self.cycles.append(cycle)
+
+        cycle.pretty_print()
         
         
         
