@@ -3,7 +3,7 @@ from data_operation import OperationType, DataOperation
 from transaction import Transaction
 import collections
 
-token_result_set = collections.namedtuple('TokenResultSet', ['transactions', 'scheduel'])
+token_result_set = collections.namedtuple('TokenResultSet', ['transactions', 'data_operations'])
 
 def parse_operation_type(op_char):
     if op_char == 'r':
