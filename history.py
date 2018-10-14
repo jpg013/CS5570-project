@@ -93,4 +93,7 @@ class History:
                     random.shuffle(ops)
             else:
                 self.schedule.append(op)
+    
+    def get_transaction_by_id(self, tx_id):
+        return next(x for x in self.transactions if x.transaction_id is tx_id)
 

@@ -29,9 +29,6 @@ class RecoverableEngine:
         self.determine_recoverability()
         print(len(self.recoverability_infractions))
 
-    def get_transaction_by_id(self, tx_id):
-        return next(x for x in self.history.transactions if x.transaction_id is tx_id)
-
     def determine_recoverability(self):
         """To determine recoverability, for each graph node edge T1 -> T2, where T1 read from T2,
         c2 < c1 or a1 < a2."""
@@ -40,8 +37,8 @@ class RecoverableEngine:
             read_op  = item.read_op
             write_op = item.write_op
 
-            tx_a = self.get_transaction_by_id(read_op.transaction_id)
-            tx_b = self.get_transaction_by_id(write_op.transaction_id)
+            tx_a = self.history.get_transaction_by_id(read_op.transaction_id)
+            tx_b = self.history.get_transaction_by_id(write_op.transaction_id)
 
             is_recoverable = self.is_transaction_recoverable(tx_a, tx_b)
 
@@ -53,8 +50,8 @@ class RecoverableEngine:
         read_op = read_set_result.read_op
         write_op = read_set_result.write_op
 
-        read_tx = self.get_transaction_by_id(read_op.transaction_id)
-        write_tx = self.get_transaction_by_id(write_op.transaction_id)
+        read_tx = self.history.get_transaction_by_id(read_op.transaction_id)
+        write_tx = self.history.get_transaction_by_id(write_op.transaction_id)
         
         read_formatted_commit_type = read_tx.commit_type().name.lower() + 's'
         write_formatted_commit_type = write_tx.commit_type().name.lower() + 's'
