@@ -53,10 +53,16 @@ class DataOperation:
       return not(self == other)
 
   def is_abort(self):
-    return self.operation_type == OperationType.ABORT
+      return self.operation_type == OperationType.ABORT
 
   def is_commit(self):
-    return self.operation_type == OperationType.COMMIT
+      return self.operation_type == OperationType.COMMIT
+
+  def is_write(self):
+      return self.operation_type == OperationType.WRITE
+  
+  def is_read(self):
+      return self.operation_type == OperationType.READ
 
   def format_pretty(self):
       formatted_item = ""

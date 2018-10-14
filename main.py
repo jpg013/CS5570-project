@@ -4,7 +4,7 @@ from token_processor import create_transactions_from_input
 from recoverable_engine import RecoverableEngine
 
 def main():
-    input_str = "w1(x) c1 r2(x) c2"
+    input_str = "w1(x) r2(x) c2 c1"
 
     token_result_set = create_transactions_from_input(input_str)
     hist = History()

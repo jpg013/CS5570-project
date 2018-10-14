@@ -13,6 +13,10 @@ class Transaction:
         self.data_operations = []
         self.transaction_id = id
 
+    def commit_type(self):
+        commit_op = next(x for x in self.data_operations if x.is_abort() or x.is_commit() )
+        return commit_op.operation_type
+
     def set_data_operations(self, data_operations):
         self.data_operations = data_operations
 
