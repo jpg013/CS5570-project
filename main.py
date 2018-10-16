@@ -1,23 +1,27 @@
 from history import History
-from token_processor import create_transactions_from_input
-from recoverable_engine import RecoverableEngine
+from history_query_builder import HistoryQueryBuilder
+from data_generation import generate_transactions
+from transaction_recovery_engine import TransactionRecoveryEngine
 
 def main():
-    input_str = "w1(x) r2(x) c1 c2"
+    input_str = "w1(x) r2(x) c2 c1"
 
-    token_result_set = create_transactions_from_input(input_str)
-    hist = History()
-    hist.set_transactions(token_result_set.transactions)
-    hist.set_schedule(token_result_set.data_operations)
+    hist = HistoryQueryBuilder(input_str).process()
     hist.pretty_print()
     
-    r_engine = RecoverableEngine(hist)
-    recoverable_result = r_engine.is_recoverable()
-    
-    print(recoverable_result.message)
+    #hist = History()
+    #hist.add_transactions(generate_transactions()).randomize_schedule()
 
-    aca_result = r_engine.is_aca()
-    print(aca_result.message)
+    #hist.pretty_print()
+    
+    recovery_engine = TransactionRecoveryEngine(hist)
+    recovery_engine.analyze()
+    #recoverable_result = r_engine.is_recoverable()
+    
+    #print(recoverable_result.message)
+
+    #aca_result = r_engine.is_aca()
+    #print(aca_result.message)
     
 if __name__== "__main__":
     main()
