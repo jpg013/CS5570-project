@@ -4,24 +4,38 @@ from data_generation import generate_transactions
 from transaction_recovery_engine import TransactionRecoveryEngine
 
 def main():
-    input_str = "w1(x) r2(x) c2 c1"
+    not_recoverable_hist_input = 'w1[x] w1[y] r2[u] w2[x] r2[y] w2[y] c2 w1[z] c1'
+    not_recoverable_hist = HistoryQueryBuilder(not_recoverable_hist_input).process()
+    not_recoverable_hist.pretty_print()
 
-    hist = HistoryQueryBuilder(input_str).process()
-    hist.pretty_print()
+    recovery_engine = TransactionRecoveryEngine(not_recoverable_hist)
+    results = recovery_engine.analyze()
+    print(results.get_report())
+
+    print('\n', end="")
     
+    recoverable_not_aca_input = 'w1[x] w1[y] r2[u] w2[x] r2[y] w2[y] w1[z] c1 c2'
+    recoverable_not_aca_hist = HistoryQueryBuilder(recoverable_not_aca_input).process()
+    recoverable_not_aca_hist.pretty_print()
+
+    recovery_engine = TransactionRecoveryEngine(recoverable_not_aca_hist)
+    results = recovery_engine.analyze()
+    print(results.get_report())
+
+    print('\n', end="")
+
+    aca_not_strict_input = 'w1[x] w1[y] r2[u] w2[x] w1[z] c1 r2[y] w2[y] c2'
+    aca_not_strict_hist = HistoryQueryBuilder(aca_not_strict_input).process()
+    aca_not_strict_hist.pretty_print()
+
+    recovery_engine = TransactionRecoveryEngine(aca_not_strict_hist)
+    results = recovery_engine.analyze()
+    print(results.get_report())
+
     #hist = History()
     #hist.add_transactions(generate_transactions()).randomize_schedule()
-
     #hist.pretty_print()
     
-    recovery_engine = TransactionRecoveryEngine(hist)
-    recovery_engine.analyze()
-    #recoverable_result = r_engine.is_recoverable()
-    
-    #print(recoverable_result.message)
-
-    #aca_result = r_engine.is_aca()
-    #print(aca_result.message)
     
 if __name__== "__main__":
     main()

@@ -3,36 +3,8 @@ from data_operation import OperationType, DataOperation
 from transaction import Transaction
 import collections
 from history import History
+from app_config import AppConfig
 
-def parse_operation_type(op_char):
-    if op_char == 'r':
-        return OperationType.READ
-    elif op_char == 'w':
-        return OperationType.WRITE
-    elif op_char == 'a':
-        return OperationType.ABORT
-    elif op_char == 'c':
-        return OperationType.COMMIT
-    else:
-        raise Exception('invalid operation type character {0}'.format(op_char))
-    
-def parse_transaction_id(t=""):
-    digits = re.findall(r'\d+', t)
-
-    if len(digits) != 1:
-        raise Exception('invalid token - {0}'.format(t))
-    
-    return int(digits[0])
-
-def parse_data_item(t=""):
-    data_items = re.findall(r'\((.*?)\)', t)
-   
-    if len(data_items) != 1:
-        raise Exception('invalid token - {0}'.format(t))
-    
-    return data_items[0]
-    
-    
 class HistoryQueryBuilder:
     """HistoryQueryBuilder is responsible for string query inputs of data operation and producing 
     valid histories if query is semantically correct, or producing an error if not."""
@@ -67,7 +39,7 @@ class HistoryQueryBuilder:
             data_item = None
 
             if (operation_type is OperationType.READ or operation_type is OperationType.WRITE):
-                data_item = parse_data_item(t)
+                data_item = self.parse_data_item(t)
             
             if transaction_id not in transaction_dict:
                 transaction_dict[transaction_id] = Transaction(transaction_id)
@@ -107,12 +79,17 @@ class HistoryQueryBuilder:
         return int(digits[0])
 
     def parse_data_item(self, t=''):
-        data_items = re.findall(r'\((.*?)\)', t)
+        data_items = re.findall(r'\[(.*?)\]|\((.*?)\)/g', t)
     
         if len(data_items) != 1:
             raise Exception('invalid token - {0}'.format(t))
+
+        data_item = data_items[0][0]
+
+        if data_item not in AppConfig.get('data_set'):
+            raise Exception('invalid data item - {0}'.format(data_item))
         
-        return data_items[0]
+        return data_item
 
 
 
