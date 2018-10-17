@@ -6,7 +6,7 @@ class AppConfig:
       "max": 3
     },
     # Set of allowed data items
-    "data_set": set(["x", "y", "z"])
+    "data_set": set(["u", "x", "y", "z"])
   }
 
   @staticmethod
