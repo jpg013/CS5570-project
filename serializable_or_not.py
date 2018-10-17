@@ -1,7 +1,7 @@
 import networkx as nx
 from history import History
 from transaction import Transaction
-from data_operation import DataOperation
+from data_operation import DataOperation, OperationType
 from token_processor import create_transactions_from_input
 
 def serializable_or_not(hist):
@@ -13,10 +13,10 @@ def serializable_or_not(hist):
         operation1=operations[i]
         for j in range(i+1,len(operations)):
             operation2=operations[j]
-            id1 = operation1.transaction_id
-            id2 = operation2.transaction_id
+            id1 = operation1.transaction.id
+            id2 = operation2.transaction.id
             if (id1 != id2 and
-                (str(operation1.operation_type) == "OperationType.WRITE" or str(operation2.operation_type) == "OperationType.WRITE") and
+                operation1.operation_type is OperationType.WRITE or operation2.operation_type is OperationType.WRITE) and
                 operation1.data_item == operation2.data_item and
                 (operation1.data_item != None) and (operation2.data_item != None)):
                 
