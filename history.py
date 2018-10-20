@@ -6,9 +6,12 @@ import sys
 class History:
     """ History class """
   
-    def __init__(self):
+    def __init__(self, transactions=None):
+        if transactions is None:
+            raise Exception('history transactions must be defined')
+        
         # list of transactions in the history
-        self.transactions = []
+        self.transactions = transactions
     
         # complete schedule of all transaction data operations including commits/aborts 
         self.schedule = []
@@ -17,7 +20,7 @@ class History:
         self.transactions = transactions
         return self
 
-    def add_schedule(self, schedule):
+    def set_schedule(self, schedule):
         self.schedule = schedule
         return self
 
@@ -55,7 +58,4 @@ class History:
                     random.shuffle(ops)
             else:
                 self.schedule.append(op)
-    
-    def get_transaction_by_id(self, tx_id):
-        return next(x for x in self.transactions if x.transaction.id is tx_id)
 

@@ -1,5 +1,6 @@
 from data_operation import OperationType
 import collections
+from recovery_report import RecoveryReport
 
 class FunctionalDependency:
     """FunctionalDependency represents a dependency relationship of two data operations where the 
@@ -20,96 +21,8 @@ class FunctionalDependency:
         self.is_aca = None
         self.is_strict = None
 
-class TransactionRecoveryResult:
-    """TransactionRecoveryResult produces recovery results for a given history."""
-    
-    def __init__(self, tx_completed_order):
-        self.tx_completed_order = tx_completed_order
-        # list of functional dependency recovery violations
-        self.recovery_violations = []
-        # list of functional dependency recovery compliances
-        self.recovery_compliances = []
-        
-        # list of functional dependency aca violations
-        self.aca_violations = []
-        # list of functional dependency aca compliances
-        self.aca_compliances = []
-
-    def generate_aca_report(self):
-        is_history_aca = len(self.aca_violations) == 0
-
-        report = 'history is{0}aca because:'.format(' ' if is_history_aca else ' not ')
-
-        reasons = self.aca_compliances[0:] if is_history_aca else self.aca_violations[0:]
-
-        for idx, reason in enumerate(reasons):
-            report = report + '\n{0}) {1}'.format(idx+1, reason)
-
-        return report
-    
-    def generate_recoverable_report(self):
-        is_history_recoverable = len(self.recovery_violations) == 0
-
-        report = 'history is{0}recoverable because:'.format(' ' if is_history_recoverable else ' not ')
-
-        reasons = self.recovery_compliances[0:] if is_history_recoverable else self.recovery_violations[0:]
-
-        for idx, reason in enumerate(reasons):
-            report = report + '\n{0}) {1}'.format(idx+1, reason)
-
-        return report
-
-    def get_report(self):
-        return self.generate_recoverable_report() + '\n \n' + self.generate_aca_report()
-
-    def process_result(self, func_dep=None):
-        if func_dep is None:
-            raise Exception('func_dep must be defined')
-
-        self.build_recovery_result(func_dep)
-        self.build_aca_result(func_dep)
-        
-    def build_recovery_result(self, func_dep):
-        if func_dep is None:
-            raise Exception('func_dep must be defined')
-        
-        dep_tx = func_dep.dep_op.transaction
-        write_tx = func_dep.write_op.transaction
-        
-        dep_formatted_commit_type = dep_tx.commit_type().name.lower() + 's'
-        write_formatted_commit_type = write_tx.commit_type().name.lower() + 's'
-
-        formatted_order = 'before' if self.tx_completed_order[dep_tx.id] < self.tx_completed_order[write_tx.id] else 'after'
-        formatted_dep_op_type = func_dep.dep_op.operation_type.name.lower() + 's'
-
-        msg = '{0} {1} from {2} and '.format(func_dep.dep_op.format_pretty(), formatted_dep_op_type, func_dep.write_op.format_pretty())
-
-        msg = msg + 'T{0} {1} {2} '.format(dep_tx.id, dep_formatted_commit_type, formatted_order)
-
-        msg = msg + 'T{0} {1}.'.format(write_tx.id, write_formatted_commit_type)
-        
-        self.recovery_compliances.append(msg) if func_dep.is_recoverable else self.recovery_violations.append(msg)
-        
-    def build_aca_result(self, func_dep):
-        if func_dep is None:
-            raise Exception('func_dep must be defined')
-
-        dep_tx = func_dep.dep_op.transaction
-        write_tx = func_dep.write_op.transaction
-
-        formatted_dep_op_type = func_dep.dep_op.operation_type.name.lower() + 's'
-
-        msg = '{0} {1} from {2} and '.format(func_dep.dep_op.format_pretty(), formatted_dep_op_type, func_dep.write_op.format_pretty())
-        
-        if func_dep.is_aca:
-            msg = msg + 'T{0} commits before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
-        else:
-            msg = msg + 'T{0} does not commit before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
-
-        self.aca_compliances.append(msg) if func_dep.is_aca else self.aca_violations.append(msg)
-
-class TransactionRecoveryEngine:
-    """TransactionRecoveryEngine class. Given a history will determine whether or not
+class RecoveryEngine:
+    """RecoveryEngine class. Given a history will determine whether or not
     the history is recoverable, avoids cascading aborts (aca), and is strict."""
 
     def __init__(self, history):
@@ -143,7 +56,7 @@ class TransactionRecoveryEngine:
         return self.build_results()
 
     def build_results(self):
-        recovery_result = TransactionRecoveryResult(self.tx_completed_order)
+        recovery_result = RecoveryReport(self.tx_completed_order)
 
         for func_dep in self.functional_dependency_set:
             recovery_result.process_result(func_dep)
@@ -171,15 +84,15 @@ class TransactionRecoveryEngine:
             # case1: dep_tx && write_tx both commit, since dep_tx reads from write_tx, write_tx must commit first
             return write_tx_complete_order < dep_tx_complete_order
 
-        if read_tx.commit_type() is OperationType.ABORT and write_tx.commit_type() is OperationType.COMMIT:
+        if dep_tx.commit_type() is OperationType.ABORT and write_tx.commit_type() is OperationType.COMMIT:
             # case2: read_tx aborts while write_tx commits, for this to be recoverable read_tx must abort after write_tx commits
             return write_tx_complete_order < dep_tx_complete_order
 
-        if read_tx.commit_type() is OperationType.COMMIT and write_tx.commit_type() is OperationType.ABORT:
+        if dep_tx.commit_type() is OperationType.COMMIT and write_tx.commit_type() is OperationType.ABORT:
             # case3: read_tx commits while write_tx aborts, for this to be recoverable read_tx must abort before write_tx commits
             return dep_tx_complete_order < write_tx_complete_order
 
-        if read_tx.commit_type() is OperationType.ABORT and write_tx.commit_type() is OperationType.ABORT:
+        if dep_tx.commit_type() is OperationType.ABORT and write_tx.commit_type() is OperationType.ABORT:
             # case3: read_tx and write_tx both abort, then read_tx must abort before read_tx
             return dep_tx_complete_order < write_tx_complete_order
 
@@ -191,19 +104,6 @@ class TransactionRecoveryEngine:
         before any operation in T1 reads data that is written by T2. Returns True is aca else false."""
 
         return self.commit_exists_within_func_dep(dep_op, write_op)
-
-    def format_recoverable_error_message(self, read_set_result):
-        read_op = read_set_result.read_op
-        write_op = read_set_result.write_op
-
-        read_tx = self.history.get_transaction_by_id(read_op.transaction_id)
-        write_tx = self.history.get_transaction_by_id(write_op.transaction_id)
-        
-        read_formatted_commit_type = read_tx.commit_type().name.lower() + 's'
-        write_formatted_commit_type = write_tx.commit_type().name.lower() + 's'
-
-        print('history is not recoverable because T{0} reads from T{1} and T{0} {2} before T{1} {3}.'
-            .format(read_tx.transaction_id, write_tx.transaction_id, read_formatted_commit_type, write_formatted_commit_type))
 
     def determine_tx_completed_order(self):
         order = 1

@@ -50,9 +50,8 @@ class HistoryQueryBuilder:
             data_operations.append(data_operation)
             tx.add_data_operation(data_operation)
 
-        hist = History()
-        hist.add_transactions(transaction_dict.values())
-        hist.add_schedule(data_operations)
+        hist = History(transaction_dict.values())
+        hist.set_schedule(data_operations)
 
         return hist
 

@@ -1,14 +1,14 @@
 from history import History
 from history_query_builder import HistoryQueryBuilder
 from data_generation import generate_transactions
-from transaction_recovery_engine import TransactionRecoveryEngine
+from recovery_engine import RecoveryEngine
 
 def main():
     not_recoverable_hist_input = 'w1[x] w1[y] r2[u] w2[x] r2[y] w2[y] c2 w1[z] c1'
     not_recoverable_hist = HistoryQueryBuilder(not_recoverable_hist_input).process()
     not_recoverable_hist.pretty_print()
 
-    recovery_engine = TransactionRecoveryEngine(not_recoverable_hist)
+    recovery_engine = RecoveryEngine(not_recoverable_hist)
     results = recovery_engine.analyze()
     print(results.get_report())
 
@@ -18,7 +18,7 @@ def main():
     recoverable_not_aca_hist = HistoryQueryBuilder(recoverable_not_aca_input).process()
     recoverable_not_aca_hist.pretty_print()
 
-    recovery_engine = TransactionRecoveryEngine(recoverable_not_aca_hist)
+    recovery_engine = RecoveryEngine(recoverable_not_aca_hist)
     results = recovery_engine.analyze()
     print(results.get_report())
 
@@ -28,7 +28,7 @@ def main():
     aca_not_strict_hist = HistoryQueryBuilder(aca_not_strict_input).process()
     aca_not_strict_hist.pretty_print()
 
-    recovery_engine = TransactionRecoveryEngine(aca_not_strict_hist)
+    recovery_engine = RecoveryEngine(aca_not_strict_hist)
     results = recovery_engine.analyze()
     print(results.get_report())
 
