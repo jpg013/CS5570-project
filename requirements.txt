@@ -1,0 +1,3 @@
+Networkx:
+pip install networkx==2.2
+

@@ -69,6 +69,7 @@ class RecoveryEngine:
         for func_dep in self.functional_dependency_set:
             func_dep.is_recoverable = self.determine_recoverable(func_dep.dep_op, func_dep.write_op)            
             func_dep.is_aca = self.determine_aca(func_dep.dep_op, func_dep.write_op)
+            func_dep.is_strict = self.determine_strict(func_dep.dep_op, func_dep.write_op)
             
     def determine_recoverable(self, dep_op, write_op):
         """Rules for determining whether dep_op is recoverable with regards to write_tx. Returns True is recoverable else False"""
@@ -104,6 +105,12 @@ class RecoveryEngine:
         before any operation in T1 reads data that is written by T2. Returns True is aca else false."""
 
         return self.commit_exists_within_func_dep(dep_op, write_op)
+
+    def determine_strict(self, dep_op, write_op):
+        """To determine strict, if T1 is functionally dependent on T2, T2 must commit
+        before any T1 writes to a data item and T2 also writes to the same data item. Returns true for strict"""
+
+        return self.commit_exists_within_func_dep(dep_op, write_op) and dep_op.is_write()
 
     def determine_tx_completed_order(self):
         order = 1
