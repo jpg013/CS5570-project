@@ -16,11 +16,8 @@ class History:
         # complete schedule of all transaction data operations including commits/aborts 
         self.schedule = []
 
-    def add_transactions(self, transactions):
-        self.transactions = transactions
-        return self
-
     def set_schedule(self, schedule):
+        """Manually set the history schedule"""
         self.schedule = schedule
         return self
 
@@ -34,6 +31,7 @@ class History:
                 print("")
 
     def randomize_schedule(self):
+        """Create a schedule by interleaving the transaction data operations"""
         if len(self.transactions) == 0:
             raise ValueError('transactions must have length')
 

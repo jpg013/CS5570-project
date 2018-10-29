@@ -4,7 +4,6 @@ from data_generation import generate_transactions
 from recovery_engine import RecoveryEngine
 from serializable_or_not import serializable_or_not
 
-
 def checks(hist):
     recovery_engine = RecoveryEngine(hist)
     results = recovery_engine.analyze()
@@ -62,10 +61,11 @@ def main():
 
     checks(not_serializable_hist)
     
-    #hist = History()
-    #hist.add_transactions(generate_transactions()).randomize_schedule()
-    #hist.pretty_print()
-    
-    
 if __name__== "__main__":
     main()
+    
+    # This is an example of randomly generating the history transaction
+    #history_transactions = generate_transactions()
+    #hist = History(history_transactions)
+    #hist.randomize_schedule()
+    #hist.pretty_print()
