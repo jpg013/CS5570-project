@@ -48,6 +48,14 @@ def main():
 
     print('\n', end=separator)
 
+    strict_input = 'r1[x] w1[x] c1 r2[x] w2[x] c2'
+    strict_hist = HistoryQueryBuilder(strict_input).process()
+    strict_hist.pretty_print()
+
+    checks(strict_hist)
+    
+    print('\n', end=separator)
+    
     not_serializable_input = "w1[x] w2[x] w2[y] c2 w1[y] w3[x] w3[y] c3 c1"
     not_serializable_hist = HistoryQueryBuilder(not_serializable_input).process()
     not_serializable_hist.pretty_print()

@@ -13,6 +13,23 @@ class RecoveryReport:
         # list of functional dependency aca compliances
         self.aca_compliances = []
 
+        #list of functional dependency strict violations
+        self.strict_violations = []
+        #list of functional dependency string compliances
+        self.strict_compliances = []
+
+    def generate_strict_report(self):
+        is_history_strict = len(self.strict_violations) == 0
+
+        report = 'history is{0}strict because:'.format(' ' if is_history_strict else ' not ')
+
+        reasons = self.strict_compliances[0:] if is_history_strict else self.strict_violations[0:]
+
+        for idx, reason in enumerate(reasons):
+            report = report + '\n{0}) {1}'.format(idx+1, reason)
+
+        return report
+
     def generate_aca_report(self):
         is_history_aca = len(self.aca_violations) == 0
 
@@ -38,7 +55,7 @@ class RecoveryReport:
         return report
 
     def get_report(self):
-        return self.generate_recoverable_report() + '\n \n' + self.generate_aca_report()
+        return self.generate_recoverable_report() + '\n \n' + self.generate_aca_report() + '\n\n' + self.generate_strict_report()
 
     def process_result(self, func_dep=None):
         if func_dep is None:
@@ -46,6 +63,7 @@ class RecoveryReport:
 
         self.build_recovery_result(func_dep)
         self.build_aca_result(func_dep)
+        self.build_strict_result(func_dep)
         
     def build_recovery_result(self, func_dep):
         if func_dep is None:
@@ -84,3 +102,23 @@ class RecoveryReport:
             msg = msg + 'T{0} does not commit before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
 
         self.aca_compliances.append(msg) if func_dep.is_aca else self.aca_violations.append(msg)
+
+    def build_strict_result(self, func_dep):
+        if func_dep is None:
+            raise Exception('func_dep must be defined')
+            
+        write_tx = func_dep.write_op.transaction
+
+        formatted_dep_op_type = func_dep.dep_op.operation_type.name.lower() + 's'
+
+        msg = '{0} {1} from {2} and '.format(func_dep.dep_op.format_pretty(), formatted_dep_op_type, func_dep.write_op.format_pretty())
+
+        if func_dep.is_strict:
+            msg = msg + 'T{0} commits before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
+        else:
+            msg = msg + 'T{0} does not commit before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
+
+        self.strict_compliances.append(msg) if func_dep.is_strict else self.strict_violations.append(msg)
+                    
+
+        

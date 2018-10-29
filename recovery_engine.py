@@ -17,9 +17,11 @@ class FunctionalDependency:
 
         self.dep_op = dep_op
         self.write_op = write_op
-        self.is_recoverable = None
-        self.is_aca = None
-        self.is_strict = None
+        
+        #assume true until proven false in analyze_functional_dependencies() in RecoveryEngine
+        self.is_recoverable = True
+        self.is_aca = True
+        self.is_strict = True
 
 class RecoveryEngine:
     """RecoveryEngine class. Given a history will determine whether or not
@@ -30,10 +32,13 @@ class RecoveryEngine:
             raise ValueError("History must be defined.")
       
         self.history = history
-        # set of ReadRecoveryResults containing a read op that reads data item written by write op from a 
+        # set of FunctionalDependency's containing a read op that reads data item written by write op from a 
         # different transaction
         
         self.functional_dependency_set = set()
+
+        # set of functional dependencies (specifically "write from" for determining strict recoverability
+        self.write_dependency_set = set()
 
         # a dict containing the order that each transaction in the history either commits/aborts. The keys are 
         # transaction ids, and the value is the order of completion, starting at index 1.
@@ -66,10 +71,14 @@ class RecoveryEngine:
         
     def analyze_functional_dependencies(self):
         """Iterates over each read set item and computes recoverable/aca properties."""
+        
         for func_dep in self.functional_dependency_set:
-            func_dep.is_recoverable = self.determine_recoverable(func_dep.dep_op, func_dep.write_op)            
-            func_dep.is_aca = self.determine_aca(func_dep.dep_op, func_dep.write_op)
-            func_dep.is_strict = self.determine_strict(func_dep.dep_op, func_dep.write_op)
+            if not self.determine_recoverable(func_dep.dep_op, func_dep.write_op):
+                func_dep.is_recoverable = False
+            if not self.determine_aca(func_dep.dep_op, func_dep.write_op):
+                func_dep.is_aca = False
+            if not self.determine_strict(func_dep.dep_op, func_dep.write_op):
+                func_dep.is_strict = False
             
     def determine_recoverable(self, dep_op, write_op):
         """Rules for determining whether dep_op is recoverable with regards to write_tx. Returns True is recoverable else False"""
@@ -109,7 +118,7 @@ class RecoveryEngine:
     def determine_strict(self, dep_op, write_op):
         """To determine strict, if T1 is functionally dependent on T2, T2 must commit
         before any T1 writes to a data item and T2 also writes to the same data item. Returns true for strict"""
-
+        
         return self.commit_exists_within_func_dep(dep_op, write_op) and dep_op.is_write()
 
     def determine_tx_completed_order(self):
@@ -142,6 +151,9 @@ class RecoveryEngine:
 
     def add_functional_dependency(self, dep_op, write_op):
         self.functional_dependency_set.add(FunctionalDependency(dep_op, write_op))
+
+    def add_write_dependency(self, dep_op, write_op):
+        self.write_dependency_set.add(FunctionalDependency(dep_op, write_op)
         
     def construct_functional_dependency_set(self):
         """Find edge relationships between nodes. We say a node Ti, reads x from Tj in history H if:
@@ -196,6 +208,61 @@ class RecoveryEngine:
             # There is a read from relation. Add a tuple to the read set
             self.add_functional_dependency(read_op, write_op)
             
+     def construct_write_dependency_set(self):
+        """Find edge relationships between nodes. We say a node Ti, reads x from Tj in history H if:
+        1) wj(x) < ri(x)
+        2) aj !< ri(x)
+        3) if there is some wk(x) such that wj(x) < wk(x) < ri(x), then ak < ri(x)
+        """
+        
+        # init the set
+        self.write_dependency_set = set()
+        
+        schedule = self.history.schedule[0:]
+
+        for idx, first_write in enumerate(schedule):
+            # cannot read from previous data if first element
+            if idx == 0:
+                continue
+
+            # must be a write operation
+            if not first_write.is_write():
+                continue
+            
+            # look for an write to the same data item
+            r_slice = schedule[0:idx]
+            write_found = None
+
+            for write_op in reversed(r_slice):
+                # only care about same data item write op
+                if write_op.data_item != first_write.data_item:
+                    continue
+                
+                # Filter out non-writes
+                if not write_op.is_write():
+                    continue
+
+                # break if same transaction
+                if write_op.transaction is first_write.transaction:
+                    break
+                
+                write_found = write_op
+                break
+
+            if write_found is None:
+                continue
+            
+            abort_exists = self.abort_exists_within_func_dep(first_write, write_found)
+            
+            # An abort exists, so read_op does not read from write_op
+            if abort_exists:
+                continue
+            
+            # There is a writes relation. Add a tuple to the write set
+            self.add_write_dependency(first_write, write_op)
+            
+
+                
 
                 
 
