@@ -7,7 +7,7 @@ class RecoveryReport:
         self.recovery_violations = []
         # list of functional dependency recovery compliances
         self.recovery_compliances = []
-        
+
         # list of functional dependency aca violations
         self.aca_violations = []
         # list of functional dependency aca compliances
@@ -63,6 +63,11 @@ class RecoveryReport:
 
         self.build_recovery_result(func_dep)
         self.build_aca_result(func_dep)
+
+    def process_strict_result(self, func_dep=None):
+        if func_dep is None:
+            raise Exception('func_dep must be defined')
+
         self.build_strict_result(func_dep)
         
     def build_recovery_result(self, func_dep):

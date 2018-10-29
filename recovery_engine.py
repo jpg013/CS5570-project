@@ -65,6 +65,8 @@ class RecoveryEngine:
 
         for func_dep in self.functional_dependency_set:
             recovery_result.process_result(func_dep)
+        for func_dep in self.write_dependency_set:
+            recovery_result.process_strict_result(func_dep)
         
         # for item in self.read_from_set:
         return recovery_result
@@ -77,6 +79,7 @@ class RecoveryEngine:
                 func_dep.is_recoverable = False
             if not self.determine_aca(func_dep.dep_op, func_dep.write_op):
                 func_dep.is_aca = False
+        for func_dep in self.write_dependency_set:
             if not self.determine_strict(func_dep.dep_op, func_dep.write_op):
                 func_dep.is_strict = False
             
@@ -107,7 +110,7 @@ class RecoveryEngine:
             return dep_tx_complete_order < write_tx_complete_order
 
         # we should never reach this case?
-        raise Exception('what the hell!')
+        raise Exception('unknown operation type')
 
     def determine_aca(self, dep_op, write_op):
         """To determine aca we follow the logic that if T1 reads from T2, the T2 must commit 
@@ -153,7 +156,7 @@ class RecoveryEngine:
         self.functional_dependency_set.add(FunctionalDependency(dep_op, write_op))
 
     def add_write_dependency(self, dep_op, write_op):
-        self.write_dependency_set.add(FunctionalDependency(dep_op, write_op)
+        self.write_dependency_set.add(FunctionalDependency(dep_op, write_op))
         
     def construct_functional_dependency_set(self):
         """Find edge relationships between nodes. We say a node Ti, reads x from Tj in history H if:
@@ -164,25 +167,22 @@ class RecoveryEngine:
         
         # init the set
         self.functional_dependency_set = set()
+        self.write_dependency_set = set()
         
         schedule = self.history.schedule[0:]
 
-        for idx, read_op in enumerate(schedule):
+        for idx, first_op in enumerate(schedule):
             # cannot read from previous data if first element
             if idx == 0:
                 continue
 
-            # must be a read operation
-            if not read_op.is_read():
-                continue
-            
             # look for an write to the same data item
             r_slice = schedule[0:idx]
             write_found = None
 
             for write_op in reversed(r_slice):
                 # only care about same data item write op
-                if write_op.data_item != read_op.data_item:
+                if write_op.data_item != first_op.data_item:
                     continue
                 
                 # Filter out non-writes
@@ -190,7 +190,7 @@ class RecoveryEngine:
                     continue
 
                 # break if same transaction
-                if write_op.transaction is read_op.transaction:
+                if write_op.transaction is first_op.transaction:
                     break
                 
                 write_found = write_op
@@ -199,82 +199,14 @@ class RecoveryEngine:
             if write_found is None:
                 continue
             
-            abort_exists = self.abort_exists_within_func_dep(read_op, write_found)
+            abort_exists = self.abort_exists_within_func_dep(first_op, write_found)
             
             # An abort exists, so read_op does not read from write_op
             if abort_exists:
                 continue
             
             # There is a read from relation. Add a tuple to the read set
-            self.add_functional_dependency(read_op, write_op)
-            
-     def construct_write_dependency_set(self):
-        """Find edge relationships between nodes. We say a node Ti, reads x from Tj in history H if:
-        1) wj(x) < ri(x)
-        2) aj !< ri(x)
-        3) if there is some wk(x) such that wj(x) < wk(x) < ri(x), then ak < ri(x)
-        """
-        
-        # init the set
-        self.write_dependency_set = set()
-        
-        schedule = self.history.schedule[0:]
-
-        for idx, first_write in enumerate(schedule):
-            # cannot read from previous data if first element
-            if idx == 0:
-                continue
-
-            # must be a write operation
-            if not first_write.is_write():
-                continue
-            
-            # look for an write to the same data item
-            r_slice = schedule[0:idx]
-            write_found = None
-
-            for write_op in reversed(r_slice):
-                # only care about same data item write op
-                if write_op.data_item != first_write.data_item:
-                    continue
-                
-                # Filter out non-writes
-                if not write_op.is_write():
-                    continue
-
-                # break if same transaction
-                if write_op.transaction is first_write.transaction:
-                    break
-                
-                write_found = write_op
-                break
-
-            if write_found is None:
-                continue
-            
-            abort_exists = self.abort_exists_within_func_dep(first_write, write_found)
-            
-            # An abort exists, so read_op does not read from write_op
-            if abort_exists:
-                continue
-            
-            # There is a writes relation. Add a tuple to the write set
-            self.add_write_dependency(first_write, write_op)
-            
-
-                
-
-                
-
-                      
-        
-
-
-        
-                
-
-    
-
-  
-    
-
+            if first_op.is_read():
+                self.add_functional_dependency(first_op, write_op)
+            elif first_op.is_write():
+                self.add_write_dependency(first_op, write_op)
