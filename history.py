@@ -16,10 +16,6 @@ class History:
         # complete schedule of all transaction data operations including commits/aborts 
         self.schedule = []
 
-    def add_transactions(self, transactions):
-        self.transactions = transactions
-        return self
-
     def set_schedule(self, schedule):
         self.schedule = schedule
         return self

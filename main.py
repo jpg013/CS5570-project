@@ -17,6 +17,8 @@ def checks(hist):
     else:
         print("The history is not serializable", end = "\n")
 
+import flask
+
 def main():
 
     separator=""
@@ -55,9 +57,10 @@ def main():
     checks(not_serializable_hist)
     
     #hist = History()
+    # This is an example of how you could generate a random history
+    #hist = History(generate_transactions())
     #hist.add_transactions(generate_transactions()).randomize_schedule()
     #hist.pretty_print()
-    
     
 if __name__== "__main__":
     main()
