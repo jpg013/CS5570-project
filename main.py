@@ -4,7 +4,6 @@ from data_generation import generate_transactions
 from recovery_engine import RecoveryEngine
 from serializable_or_not import serializable_or_not
 
-
 def checks(hist):
     recovery_engine = RecoveryEngine(hist)
     results = recovery_engine.analyze()
@@ -16,8 +15,6 @@ def checks(hist):
         print("The history is serializable", end = "\n")
     else:
         print("The history is not serializable", end = "\n")
-
-import flask
 
 def main():
 
@@ -50,17 +47,25 @@ def main():
 
     print('\n', end=separator)
 
+    strict_input = 'r1[x] w1[x] c1 r2[x] w2[x] c2'
+    strict_hist = HistoryQueryBuilder(strict_input).process()
+    strict_hist.pretty_print()
+
+    checks(strict_hist)
+    
+    print('\n', end=separator)
+    
     not_serializable_input = "w1[x] w2[x] w2[y] c2 w1[y] w3[x] w3[y] c3 c1"
     not_serializable_hist = HistoryQueryBuilder(not_serializable_input).process()
     not_serializable_hist.pretty_print()
 
     checks(not_serializable_hist)
     
-    #hist = History()
-    # This is an example of how you could generate a random history
-    #hist = History(generate_transactions())
-    #hist.add_transactions(generate_transactions()).randomize_schedule()
-    #hist.pretty_print()
-    
 if __name__== "__main__":
     main()
+    
+    # This is an example of randomly generating the history transaction
+    #history_transactions = generate_transactions()
+    #hist = History(history_transactions)
+    #hist.randomize_schedule()
+    #hist.pretty_print()

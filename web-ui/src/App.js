@@ -1,15 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import AppHeader from './AppHeader';
 import styles from "./App.css";
 
-console.log(styles);
-
-class App extends Component {
+class App extends React.PureComponent {
   render() {
     return (
-      <div>
-
-      </div>
+      <AppHeader />
     );
   }
 }
