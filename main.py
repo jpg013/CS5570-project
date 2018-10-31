@@ -16,6 +16,8 @@ def checks(hist):
     else:
         print("The history is not serializable", end = "\n")
 
+import flask
+
 def main():
 
     separator=""
