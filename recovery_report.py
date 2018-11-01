@@ -62,7 +62,7 @@ class RecoveryReport:
             raise Exception('func_dep must be defined')
 
         self.build_recovery_result(func_dep)
-        self.build_aca_result(func_dep)
+        # self.build_aca_result(func_dep)
 
     def process_strict_result(self, func_dep=None):
         if func_dep is None:
@@ -73,21 +73,24 @@ class RecoveryReport:
     def build_recovery_result(self, func_dep):
         if func_dep is None:
             raise Exception('func_dep must be defined')
+
+        dependent_operation = func_dep.dependent_operation
+        read_from_operation = func_dep.read_from_operation
         
-        dep_tx = func_dep.dep_op.transaction
-        write_tx = func_dep.write_op.transaction
+        dep_tx       = func_dep.dependent_operation.transaction
+        read_from_tx = func_dep.read_from_operation.transaction
         
         dep_formatted_commit_type = dep_tx.commit_type().name.lower() + 's'
-        write_formatted_commit_type = write_tx.commit_type().name.lower() + 's'
+        read_from_formatted_commit_type = read_from_tx.commit_type().name.lower() + 's'
 
-        formatted_order = 'before' if self.tx_completed_order[dep_tx.id] < self.tx_completed_order[write_tx.id] else 'after'
-        formatted_dep_op_type = func_dep.dep_op.operation_type.name.lower() + 's'
+        formatted_order = 'before' if self.tx_completed_order[dep_tx.id] < self.tx_completed_order[read_from_tx.id] else 'after'
+        formatted_dep_op_type = dependent_operation.operation_type.name.lower() + 's'
 
-        msg = '{0} {1} from {2} and '.format(func_dep.dep_op.format_pretty(), formatted_dep_op_type, func_dep.write_op.format_pretty())
+        msg = '{0} {1} from {2} and '.format(dependent_operation.format_pretty(), formatted_dep_op_type, read_from_operation.format_pretty())
 
         msg = msg + 'T{0} {1} {2} '.format(dep_tx.id, dep_formatted_commit_type, formatted_order)
 
-        msg = msg + 'T{0} {1}.'.format(write_tx.id, write_formatted_commit_type)
+        msg = msg + 'T{0} {1}.'.format(read_from_tx.id, read_from_formatted_commit_type)
         
         self.recovery_compliances.append(msg) if func_dep.is_recoverable else self.recovery_violations.append(msg)
         
