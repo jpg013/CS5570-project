@@ -9,7 +9,7 @@ class ReadFromRelationship:
     is_recoverable, is_aca, and is_strict and their reasons which are initially set to None.
     """
 
-    def __init__(self, dependent_operation, read_from_operation):
+    def __init__(self, dependent_operation, read_from_operation, dep_tx_complete_order, read_from_tx_complete_order):
         if dependent_operation is None:
             raise Exception('dependent_operation must be defined.')
 
@@ -18,14 +18,13 @@ class ReadFromRelationship:
 
         self.dependent_operation = dependent_operation
         self.read_from_operation = read_from_operation
+        self.dep_tx_complete_order = dep_tx_complete_order
+        self.read_from_tx_complete_order = read_from_tx_complete_order
         
         # Values 
         self.is_recoverable = None
-        self.is_recoverable_reason = None
         self.is_aca = None
-        self.is_aca_reason = None
         self.is_strict = None
-        self.is_strict_reason = None
 
 class RecoveryEngine:
     """RecoveryEngine class. Given a history will determine whether or not
@@ -39,97 +38,89 @@ class RecoveryEngine:
 
         # set of FunctionalDependency's containing a read op that reads data item written by write op from a 
         # different transaction
-        self.functional_dependency_set = set()
+        self.read_from_relationship_set = set()
 
         # a dict containing the order that each transaction in the history either commits/aborts. The keys are 
         # transaction ids, and the value is the order of completion, starting at index 1.
-        #
         self.tx_completed_order = {}
-        
-    def analyze(self):
-        """Main method to be called to analyze the history. Returns a RecoveryResult"""
-        
+
         # Determine the order in which the transactions completed. This is needed for recoverability
         self.determine_tx_completed_order()
         
         # Construct the set of read from relationships
-        self.construct_functional_dependency_set()
+        self.construct_read_from_relationship_set()
 
-        # Analyze the set of read from relationships
-        self.analyze_functional_dependencies()
 
-        return self.build_results()
-
-    def build_results(self):
-        recovery_result = RecoveryReport(self.tx_completed_order)
-
-        for func_dep in self.functional_dependency_set:
-            recovery_result.process_result(func_dep)
+        # Analyze the ReadFromRelationships for recoverable, aca, and strict properties
+        self.analyze()
         
-        return recovery_result.get_report()
+    def analyze(self):
+        """Iterates over each read from relationship computes recoverable/aca/strict property of each."""
         
-    def analyze_functional_dependencies(self):
-        """Iterates over each read set item and computes recoverable/aca/strict property of each."""
+        for read_from_relationship in self.read_from_relationship_set:
+            read_from_relationship.is_recoverable = self.determine_recoverable(read_from_relationship)
+            read_from_relationship.is_aca = self.determine_aca(read_from_relationship)
+            read_from_relationship.is_strict = self.determine_strict(read_from_relationship)
         
-        for func_dep in self.functional_dependency_set:
-            func_dep.is_recoverable = self.determine_recoverable(func_dep)
-            func_dep.is_aca = self.determine_aca(func_dep)
-            func_dep.is_strict = self.determine_strict(func_dep)
+
+    def get_report(self):
+        recovery_report = RecoveryReport()
+
+        for read_from_op in self.read_from_relationship_set:
+            recovery_report.process_result(read_from_op)
+        
+        return recovery_report.build_report(self.history)
             
-    def determine_recoverable(self, functional_dependency):
+    def determine_recoverable(self, read_from_relationship):
         """Rules for determining whether dep_op is recoverable with regards to write_tx. Returns True is recoverable else False"""
 
-        dependent_operation = functional_dependency.dependent_operation
-        read_from_operation = functional_dependency.read_from_operation
-
-        dep_tx       = dependent_operation.transaction
-        read_from_tx = read_from_operation.transaction
+        dep_tx       = read_from_relationship.dependent_operation.transaction
+        read_from_tx = read_from_relationship.read_from_operation.transaction
         
         dep_tx_complete_order = self.tx_completed_order[dep_tx.id]
         read_from_tx_complete_order = self.tx_completed_order[read_from_tx.id]
 
-        # some ugly use cases here.
+        # Recoverable Rules
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.COMMIT:
             # case1: dep_tx && read_from_tx both commit, since dep_tx reads from read_from_tx, read_from_tx must commit first
             return read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.COMMIT:
-            # case2: read_tx aborts while read_from_tx commits, for this to be recoverable read_tx must abort after read_from_tx commits
+            # case2: dep_tx aborts while read_from_tx commits, for this to be recoverable dep_tx must abort after read_from_tx commits
             return read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.ABORT:
-            # case3: read_tx commits while read_from_tx aborts, for this to be recoverable read_tx must abort before read_from_tx commits
+            # case3: dep_tx commits while read_from_tx aborts, for this to be recoverable dep_tx must abort before read_from_tx commits
             return dep_tx_complete_order < read_from_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.ABORT:
-            # case3: read_tx and read_from_tx both abort, then read_tx must abort before read_tx
+            # case4: dep_tx and read_from_tx both abort, then dep_tx must abort before read_from_tx
             return dep_tx_complete_order < read_from_tx_complete_order
 
         # we should never reach this case?
         raise Exception('unknown operation type')
 
-    def determine_aca(self, functional_dependency):
-        """To determine aca we follow the logic that if T1 reads data item x from T2, the T2 must commit 
+    def determine_aca(self, read_from_relatinoship):
+        """To determine aca we follow the logic that if T1 explicitly reads data item x from T2, then T2 must commit 
         before any operation in T1 reads data item x that is written by T2. Returns True is aca else false."""
 
-        dependent_operation = functional_dependency.dependent_operation
-        read_from_operation = functional_dependency.read_from_operation
-
+        dep_op = read_from_relatinoship.dependent_operation
+        read_from_op = read_from_relatinoship.read_from_operation
         
-        # The dependent operation has to be a read
-        if dependent_operation.is_write():
-            return
+        # The dependent operation has to be an explicit read
+        if dep_op.is_write():
+            return None
 
-        return self.commit_exists_between_operations(read_from_operation, dependent_operation)
+        return self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction)
 
-    def determine_strict(self, functional_dependency):
+    def determine_strict(self, read_from_relatinoship):
         """To determine strict, if T1 is functionally dependent on T2, T2 must commit
         before any T1 writes to a data item and T2 also writes to the same data item. Returns true for strict"""
         
-        dependent_operation = functional_dependency.dependent_operation
-        read_from_operation = functional_dependency.read_from_operation
+        dep_op = read_from_relatinoship.dependent_operation
+        read_from_op = read_from_relatinoship.read_from_operation
 
-        return self.commit_exists_between_operations(read_from_operation, dependent_operation)
+        return self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction)
 
     def determine_tx_completed_order(self):
         order = 1
@@ -138,7 +129,7 @@ class RecoveryEngine:
                 self.tx_completed_order[data_op.transaction.id] = order
                 order += 1
 
-    def commit_exists_between_operations(self, start_op=None, end_op=None):
+    def commit_exists_between_operations(self, start_op=None, end_op=None, ref_tx=None):
         start_idx = self.history.schedule.index(start_op)
         end_idx = self.history.schedule.index(end_op)
         sched_slice = self.history.schedule[start_idx:end_idx]
@@ -146,20 +137,20 @@ class RecoveryEngine:
         if start_idx >= end_idx:
             raise Exception('invalid index bounds')
 
-        return any(op.is_commit() and op.transaction is start_op.transaction for op in sched_slice)
+        return any(op.is_commit() and op.transaction is ref_tx for op in sched_slice)
     
-    def abort_exists_within_func_dep(self, dep_op=None, write_op=None):
-        start_idx = self.history.schedule.index(write_op)
-        end_idx = self.history.schedule.index(dep_op)
+    def abort_exists_between_operations(self, start_op=None, end_op=None, ref_tx=None):
+        start_idx = self.history.schedule.index(start_op)
+        end_idx = self.history.schedule.index(end_op)
         schedule_slice = self.history.schedule[start_idx:end_idx]
 
         if start_idx >= end_idx:
             raise Exception('invalid index bounds')
                 
         # Check for aborts in the index slice
-        return any(item.is_abort() and item.transaction is write_op.transaction for item in schedule_slice)
+        return any(item.is_abort() and item.transaction is ref_tx for item in schedule_slice)
 
-    def construct_functional_dependency_set(self):
+    def construct_read_from_relationship_set(self):
         """Find edge relationships between nodes. We say a node Ti, reads x from Tj in history H if:
         1) wj(x) < ri(x) 
         2) aj !< ri(x)
@@ -167,10 +158,12 @@ class RecoveryEngine:
         """
         
         # init the set
-        self.functional_dependency_set = set()
+        self.read_from_relationship_set = set()
         
+        # Schedule slice
         schedule = self.history.schedule[0:]
 
+        # Iterate through each item in the schedule
         for idx, dep_op in enumerate(schedule):
             # cannot read from previous data if first element
             if idx == 0:
@@ -191,14 +184,14 @@ class RecoveryEngine:
                 if op.data_item != dep_op.data_item:
                     continue
                 
-                # Filter out non-writes
-                if not op.is_write():
-                    continue
-
-                # If dep_op is reading a write from the same transaction then
-                # we can simply break out and continue;
+                # If dep_op is reading a write from the same transaction then we can simply break out and continue;
                 if op.transaction is dep_op.transaction:
                     break
+
+                abort_exists = self.abort_exists_between_operations(op, dep_op, op.transaction)
+
+                if abort_exists:
+                    continue
                 
                 # Passed all the criteria, so op is being read from.
                 read_from_op = op
@@ -208,11 +201,10 @@ class RecoveryEngine:
             if read_from_op is None:
                 continue
             
-            #abort_exists = self.abort_exists_within_func_dep(first_op, write_found)
-            
-            # An abort exists, so read_op does not read from write_op
-            #if abort_exists:
-                #continue
-            
-            # There is a read from relation. Add functional dependency.
-            self.functional_dependency_set.add(FunctionalDependency(dep_op, read_from_op))
+            # There exists a read from relation. Add to the set.
+            self.read_from_relationship_set.add(ReadFromRelationship(
+                dep_op, 
+                read_from_op,
+                self.tx_completed_order[dep_op.transaction.id],
+                self.tx_completed_order[read_from_op.transaction.id]
+            ))

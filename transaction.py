@@ -51,9 +51,9 @@ class Transaction:
     def add_data_operation(self, data_operation):
         self.data_operations.append(data_operation)
         
-    def pretty_print(self):
+    def print_pretty(self):
         for op in self.data_operations:
-            op.pretty_print()
+            op.print_pretty()
 
             if op is not self.data_operations[-1]:
                 print(" --> ", end="")

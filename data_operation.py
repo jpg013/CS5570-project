@@ -78,5 +78,5 @@ class DataOperation:
       
       return formatted_item
 
-  def pretty_print(self):
+  def print_pretty(self):
     print(self.format_pretty(), end="")
