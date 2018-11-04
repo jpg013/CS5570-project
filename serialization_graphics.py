@@ -1,11 +1,14 @@
 from graphics import *
 
-def drawSerializationGraph(history=None,relations=[(1,2),(2,3),(3,2)]): #remove default parameters after testing
+#pynput https://pypi.org/project/pynput/
+#http://mcsp.wartburg.edu/zelle/python/graphics/graphics.pdf
+
+def drawSerializationGraph(history,relations): #remove default parameters after testing
     
-    transactionList = [1,2,3] #for testing
+    transactionList = []
     
-    #for transaction in history.transactions:
-    #    transactionList.append(transaction.id)
+    for transaction in history.transactions:
+        transactionList.append(transaction.id)
 
     #==CONSTANTS==
     
@@ -146,4 +149,4 @@ def drawSerializationGraph(history=None,relations=[(1,2),(2,3),(3,2)]): #remove 
     win.getMouse()
     win.close()
 
-drawSerializationGraph() #for testing purposes
+

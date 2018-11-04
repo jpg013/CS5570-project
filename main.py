@@ -3,6 +3,7 @@ from history_query_builder import HistoryQueryBuilder
 from data_generation import generate_transactions
 from recovery_engine import RecoveryEngine
 from serializable_or_not import serializable_or_not
+from serialization_graphics import drawSerializationGraph
 
 def checks(hist):
     recovery_engine = RecoveryEngine(hist)
@@ -10,11 +11,14 @@ def checks(hist):
     print(results.get_report())
 
     print("\n")
-
-    if(serializable_or_not(hist)):
+    temp = serializable_or_not(hist)
+    
+    if(temp[0]):
         print("The history is serializable", end = "\n")
     else:
         print("The history is not serializable", end = "\n")
+        
+    drawSerializationGraph(hist,temp[1])
 
 def main():
 
