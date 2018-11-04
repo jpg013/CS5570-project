@@ -49,10 +49,10 @@ def main():
     #checks(not_serializable_hist)
     
 if __name__== "__main__":
-    main()
+    #main()
     
     # This is an example of randomly generating the history transaction
-    #history_transactions = generate_transactions()
-    #hist = History(history_transactions)
-    #hist.randomize_schedule()
-    #hist.pretty_print()
+    history_transactions = generate_transactions()
+    hist = History(history_transactions)
+    hist.interleave_transaction_schedule()
+    hist.print_pretty()

@@ -23,7 +23,7 @@ class History:
 
     def print_pretty(self):
         for item in self.schedule:
-            item.pretty_print()
+            item.print_pretty()
 
             if item is not self.schedule[-1]:
                 print(" --> ", end="")
@@ -42,7 +42,7 @@ class History:
 
         return format
 
-    def randomize_schedule(self):
+    def interleave_transaction_schedule(self):
         """Create a schedule by interleaving the transaction data operations"""
         if len(self.transactions) == 0:
             raise ValueError('transactions must have length')
