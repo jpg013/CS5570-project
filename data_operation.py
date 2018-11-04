@@ -80,3 +80,4 @@ class DataOperation:
 
   def pretty_print(self):
     print(self.format_pretty(), end="")
+    return self.format_pretty()

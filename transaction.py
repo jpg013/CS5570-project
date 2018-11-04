@@ -21,11 +21,16 @@ class Transaction:
         self.data_operations.append(data_operation)
         
     def pretty_print(self):
+        prettyOps = ""
         for op in self.data_operations:
+            prettyOps += op.format_pretty()
             op.pretty_print()
-
             if op is not self.data_operations[-1]:
+                prettyOps += " --> "
                 print(" --> ", end="")
             else:
                 print("")
+        return prettyOps
+
+            
         

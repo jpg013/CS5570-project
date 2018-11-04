@@ -22,13 +22,17 @@ class History:
         return self
 
     def pretty_print(self):
+        prettyHist = ""
         for item in self.schedule:
-            item.pretty_print()
+            print(type(item))
+            prettyHist += item.pretty_print()
 
             if item is not self.schedule[-1]:
+                prettyHist += " --> "
                 print(" --> ", end="")
             else:
                 print("")
+        return prettyHist
 
     def randomize_schedule(self):
         """Create a schedule by interleaving the transaction data operations"""
