@@ -1,6 +1,7 @@
 from data_operation import OperationType
 import collections
 from recovery_report import RecoveryReport
+from recoverable_value import RecoverableValue
 
 class ReadFromRelationship:
     """ReadFromRelationship represents a dependency relationship of two data operations where the 
@@ -22,9 +23,9 @@ class ReadFromRelationship:
         self.read_from_tx_complete_order = read_from_tx_complete_order
         
         # Values 
-        self.is_recoverable = None
-        self.is_aca = None
-        self.is_strict = None
+        self.recoverable_value = RecoverableValue.NOT_AVAILABLE
+        self.aca_value = RecoverableValue.NOT_AVAILABLE
+        self.strict_value = RecoverableValue.NOT_AVAILABLE
 
 class RecoveryEngine:
     """RecoveryEngine class. Given a history will determine whether or not
@@ -57,11 +58,10 @@ class RecoveryEngine:
     def analyze(self):
         """Iterates over each read from relationship computes recoverable/aca/strict property of each."""
         
-        for read_from_relationship in self.read_from_relationship_set:
-            read_from_relationship.is_recoverable = self.determine_recoverable(read_from_relationship)
-            read_from_relationship.is_aca = self.determine_aca(read_from_relationship)
-            read_from_relationship.is_strict = self.determine_strict(read_from_relationship)
-        
+        for item in self.read_from_relationship_set:
+            item.recoverable_value = self.determine_recoverable(item)
+            item.aca_value = self.determine_aca(item)
+            item.strict_value = self.determine_strict(item)
 
     def get_report(self):
         recovery_report = RecoveryReport()
@@ -81,46 +81,51 @@ class RecoveryEngine:
         read_from_tx_complete_order = self.tx_completed_order[read_from_tx.id]
 
         # Recoverable Rules
+        is_recoverable = None
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.COMMIT:
             # case1: dep_tx && read_from_tx both commit, since dep_tx reads from read_from_tx, read_from_tx must commit first
-            return read_from_tx_complete_order < dep_tx_complete_order
+            is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.COMMIT:
             # case2: dep_tx aborts while read_from_tx commits, for this to be recoverable dep_tx must abort after read_from_tx commits
-            return read_from_tx_complete_order < dep_tx_complete_order
+            is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.ABORT:
             # case3: dep_tx commits while read_from_tx aborts, for this to be recoverable dep_tx must abort before read_from_tx commits
-            return dep_tx_complete_order < read_from_tx_complete_order
+            is_recoverable = dep_tx_complete_order < read_from_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.ABORT:
             # case4: dep_tx and read_from_tx both abort, then dep_tx must abort before read_from_tx
-            return dep_tx_complete_order < read_from_tx_complete_order
+            is_recoverable = dep_tx_complete_order < read_from_tx_complete_order
 
         # we should never reach this case?
-        raise Exception('unknown operation type')
+        if is_recoverable is None:
+            raise Exception('invalid recoverability')
 
-    def determine_aca(self, read_from_relatinoship):
+        return RecoverableValue.IS_RECOVERABLE if is_recoverable else RecoverableValue.IS_NOT_RECOVERABLE
+
+
+    def determine_aca(self, read_from_relationship):
         """To determine aca we follow the logic that if T1 explicitly reads data item x from T2, then T2 must commit 
         before any operation in T1 reads data item x that is written by T2. Returns True is aca else false."""
 
-        dep_op = read_from_relatinoship.dependent_operation
-        read_from_op = read_from_relatinoship.read_from_operation
+        dep_op = read_from_relationship.dependent_operation
+        read_from_op = read_from_relationship.read_from_operation
         
         # The dependent operation has to be an explicit read
         if dep_op.is_write():
-            return None
+            return RecoverableValue.NOT_AVAILABLE
 
-        return self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction)
+        return RecoverableValue.IS_ACA if self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction) else RecoverableValue.IS_NOT_ACA
 
-    def determine_strict(self, read_from_relatinoship):
+    def determine_strict(self, read_from_relationship):
         """To determine strict, if T1 is functionally dependent on T2, T2 must commit
         before any T1 writes to a data item and T2 also writes to the same data item. Returns true for strict"""
         
-        dep_op = read_from_relatinoship.dependent_operation
-        read_from_op = read_from_relatinoship.read_from_operation
+        dep_op = read_from_relationship.dependent_operation
+        read_from_op = read_from_relationship.read_from_operation
 
-        return self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction)
+        return RecoverableValue.IS_STRICT if self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction) else RecoverableValue.IS_NOT_STRICT
 
     def determine_tx_completed_order(self):
         order = 1

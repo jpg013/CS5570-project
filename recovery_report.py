@@ -1,24 +1,4 @@
-"""
-dependent_operation = func_dep.dependent_operation
-read_from_operation = func_dep.read_from_operation
-
-dep_tx       = func_dep.dependent_operation.transaction
-read_from_tx = func_dep.read_from_operation.transaction
-
-dep_formatted_commit_type = dep_tx.commit_type().name.lower() + 's'
-read_from_formatted_commit_type = read_from_tx.commit_type().name.lower() + 's'
-
-formatted_order = 'before' if self.tx_completed_order[dep_tx.id] < self.tx_completed_order[read_from_tx.id] else 'after'
-formatted_dep_op_type = dependent_operation.operation_type.name.lower() + 's'
-
-msg = '{0} {1} from {2} and '.format(dependent_operation.format_pretty(), formatted_dep_op_type, read_from_operation.format_pretty())
-
-msg = msg + 'T{0} {1} {2} '.format(dep_tx.id, dep_formatted_commit_type, formatted_order)
-
-msg = msg + 'T{0} {1}.'.format(read_from_tx.id, read_from_formatted_commit_type)
-
-self.recovery_compliances.append(msg) if func_dep.is_recoverable else self.recovery_violations.append(msg)
-"""
+from recoverable_value import RecoverableValue
 
 class RecoveryResult:
     def __init__(self, read_from_relationship):
@@ -26,24 +6,40 @@ class RecoveryResult:
         self.read_from_op = read_from_relationship.read_from_operation
         self.dep_tx_complete_order = read_from_relationship.dep_tx_complete_order
         self.read_from_tx_complete_order = read_from_relationship.read_from_tx_complete_order
-        self.is_recoverable = read_from_relationship.is_recoverable
-        self.is_aca = read_from_relationship.is_aca
-        self.is_strict = read_from_relationship.is_strict
+        self.recoverable_value = read_from_relationship.recoverable_value
+        self.aca_value = read_from_relationship.aca_value
+        self.strict_value = read_from_relationship.strict_value
 
     def get_recoverable_msg(self):
-        formatted_order = 'before' if self.dep_tx_complete_order < self.read_from_tx_complete_order else 'after'
-
-        msg = '{0} {1} {2} and '.format(
+        return '{0} {1} {2} and T{3} {4} {5} T{6} {7}.'.format(
             self.dep_op.format_pretty(), 
             'overwrites' if self.dep_op.is_write() else 'reads from',
-            self.read_from_op.format_pretty()
+            self.read_from_op.format_pretty(),
+            self.dep_op.transaction.id, 
+            self.dep_op.transaction.commit_type().name.lower() + 's', 
+            'before' if self.dep_tx_complete_order < self.read_from_tx_complete_order else 'after',
+            self.read_from_op.transaction.id,
+            self.read_from_op.transaction.commit_type().name.lower() + 's'
         )
 
-        msg += 'T{0} {1} {2} '.format(self.dep_op.transaction.id, self.dep_op.transaction.commit_type().name.lower() + 's', formatted_order)
+    def get_strict_msg(self):
+        return '{0} {1} {2} and T{3} {4} {5}.'.format(
+            self.dep_op.format_pretty(), 
+            'overwrites' if self.dep_op.is_write() else 'reads from',
+            self.read_from_op.format_pretty(),
+            self.read_from_op.transaction.id, 
+            'commits' if self.strict_value is RecoverableValue.IS_STRICT else 'does not commit before',
+            self.dep_op.format_pretty(), 
+        )
 
-        msg += 'T{0} {1}.'.format(self.read_from_op.transaction.id, self.read_from_op.transaction.commit_type().name.lower() + 's')
-
-        return msg
+    def get_aca_msg(self):
+        return '{0} reads from {1} and T{2} {3} {4}.'.format(
+            self.dep_op.format_pretty(), 
+            self.read_from_op.format_pretty(),
+            self.read_from_op.transaction.id, 
+            'commits' if self.strict_value is RecoverableValue.IS_ACA else 'does not commit before',
+            self.dep_op.format_pretty(), 
+        )
 
 class RecoveryReport:
     """RecoveryReport produces recovery results for a given history."""
@@ -53,16 +49,24 @@ class RecoveryReport:
         self.recovery_results = []
 
     def generate_strict_report(self):
-        is_history_strict = len(self.strict_violations) == 0
+        strict_report = "\n\n"
+        
+        if len(self.recovery_results) == 0:
+            strict_report += 'Strict is not available for this history'
+            return strict_report
 
-        report = 'history is{0}strict because:'.format(' ' if is_history_strict else ' not ')
+        non_strict_results = [x for x in self.recovery_results if x.strict_value is RecoverableValue.IS_NOT_STRICT]
+        is_strict_results = [x for x in self.recovery_results if x.strict_value is RecoverableValue.IS_STRICT]
+        
+        is_history_strict = len(non_strict_results) == 0
+        result_list = is_strict_results if is_history_strict else non_strict_results
 
-        reasons = self.strict_compliances[0:] if is_history_strict else self.strict_violations[0:]
+        strict_report += 'history is{0}strict because:'.format(' ' if is_history_strict else ' not ')
 
-        for idx, reason in enumerate(reasons):
-            report = report + '\n{0}) {1}'.format(idx+1, reason)
+        for idx, result in enumerate(result_list):
+            strict_report += '\n{0}) {1}'.format(idx+1, result.get_strict_msg())
 
-        return report
+        return strict_report
 
     def generate_aca_report(self):
         aca_report = "\n\n"
@@ -71,10 +75,10 @@ class RecoveryReport:
             aca_report += 'ACA is not available for this history'
             return aca_report
 
-        non_aca_results = [x for x in self.recovery_results if x.is_aca == False]
-        aca_results = [x for x in self.recovery_results if x.is_aca == True]
-        
-        if len(non_aca_results) + len(aca_results):
+        non_aca_results = [x for x in self.recovery_results if x.aca_value is RecoverableValue.IS_NOT_ACA]
+        aca_results = [x for x in self.recovery_results if x.aca_value is RecoverableValue.IS_ACA]
+
+        if (len(non_aca_results) + len(aca_results)) == 0:
             aca_report += 'ACA is not available for this history'
             return aca_report
         
@@ -89,14 +93,14 @@ class RecoveryReport:
         return aca_report
     
     def generate_recoverable_report(self):
-        recoverable_report = "\n\n"
+        recoverable_report = "\n"
         
         if len(self.recovery_results) == 0:
             recoverable_report += 'history is recoverable because there do not exist any read-from relationships.'
             return recoverable_report
 
-        non_recoverable_results = [x for x in self.recovery_results if x.is_recoverable == False]
-        recoverable_results = [x for x in self.recovery_results if x.is_recoverable == True]
+        non_recoverable_results = [x for x in self.recovery_results if x.recoverable_value is RecoverableValue.IS_NOT_RECOVERABLE]
+        recoverable_results = [x for x in self.recovery_results if x.recoverable_value is RecoverableValue.IS_RECOVERABLE]
         is_history_recoverable = len(non_recoverable_results) == 0
         result_list = recoverable_results if is_history_recoverable else non_recoverable_results
 
@@ -108,12 +112,17 @@ class RecoveryReport:
         return recoverable_report
 
     def build_report(self, history):
-        report = 'Recovery Report for history: {0}\n'.format(history.format_pretty())
+        hist_title = history.format_pretty()
+        report = '\nHistory Recovery Report\n{0}\n'.format(hist_title)
+        
 
-        report += "=" * len(report)
+        report += "=" * len(hist_title)
 
         report += self.generate_recoverable_report()
         report += self.generate_aca_report()
+        report += self.generate_strict_report()
+
+        report += "\n" + "=" * len(hist_title) + "\n"
         
         return report
 
@@ -130,61 +139,5 @@ class RecoveryReport:
             raise Exception('func_dep must be defined')
 
         self.build_strict_result(func_dep)
-        
-    def build_recovery_result(self, read_from_relationship):
-        dependent_operation = func_dep.dependent_operation
-        read_from_operation = func_dep.read_from_operation
-        
-        dep_tx       = func_dep.dependent_operation.transaction
-        read_from_tx = func_dep.read_from_operation.transaction
-        
-        dep_formatted_commit_type = dep_tx.commit_type().name.lower() + 's'
-        read_from_formatted_commit_type = read_from_tx.commit_type().name.lower() + 's'
-
-        formatted_order = 'before' if self.tx_completed_order[dep_tx.id] < self.tx_completed_order[read_from_tx.id] else 'after'
-        formatted_dep_op_type = dependent_operation.operation_type.name.lower() + 's'
-
-        msg = '{0} {1} from {2} and '.format(dependent_operation.format_pretty(), formatted_dep_op_type, read_from_operation.format_pretty())
-
-        msg = msg + 'T{0} {1} {2} '.format(dep_tx.id, dep_formatted_commit_type, formatted_order)
-
-        msg = msg + 'T{0} {1}.'.format(read_from_tx.id, read_from_formatted_commit_type)
-        
-        self.recovery_compliances.append(msg) if func_dep.is_recoverable else self.recovery_violations.append(msg)
-        
-    def build_aca_result(self, func_dep):
-        if func_dep is None:
-            raise Exception('func_dep must be defined')
-
-        write_tx = func_dep.write_op.transaction
-
-        formatted_dep_op_type = func_dep.dep_op.operation_type.name.lower() + 's'
-
-        msg = '{0} {1} from {2} and '.format(func_dep.dep_op.format_pretty(), formatted_dep_op_type, func_dep.write_op.format_pretty())
-        
-        if func_dep.is_aca:
-            msg = msg + 'T{0} commits before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
-        else:
-            msg = msg + 'T{0} does not commit before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
-
-        self.aca_compliances.append(msg) if func_dep.is_aca else self.aca_violations.append(msg)
-
-    def build_strict_result(self, func_dep):
-        if func_dep is None:
-            raise Exception('func_dep must be defined')
-            
-        write_tx = func_dep.write_op.transaction
-
-        formatted_dep_op_type = func_dep.dep_op.operation_type.name.lower() + 's'
-
-        msg = '{0} {1} from {2} and '.format(func_dep.dep_op.format_pretty(), formatted_dep_op_type, func_dep.write_op.format_pretty())
-
-        if func_dep.is_strict:
-            msg = msg + 'T{0} commits before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
-        else:
-            msg = msg + 'T{0} does not commit before {1}.'.format(write_tx.id, func_dep.dep_op.format_pretty())
-
-        self.strict_compliances.append(msg) if func_dep.is_strict else self.strict_violations.append(msg)
-                    
-
+    
         
