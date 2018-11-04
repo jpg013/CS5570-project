@@ -1,6 +1,8 @@
 from recoverable_value import RecoverableValue
 
 class RecoveryResult:
+    """Recovery Result"""
+    
     def __init__(self, read_from_relationship):
         self.dep_op = read_from_relationship.dependent_operation
         self.read_from_op = read_from_relationship.read_from_operation

@@ -6,8 +6,9 @@ from recoverable_value import RecoverableValue
 class ReadFromRelationship:
     """ReadFromRelationship represents a dependency relationship of two data operations where the 
     dependent_operation either reads from, or writes to a data item that has been written to by a previous
-    operation of a different transaction. The relationship class has addition properties, 
-    is_recoverable, is_aca, and is_strict and their reasons which are initially set to None.
+    operation of a different transaction. The relationship class has the properties, 
+    recoverable_value, aca_value, and strict_value which indicate whether or not the relationship holds to 
+    recoverable, aca and strict properties.
     """
 
     def __init__(self, dependent_operation, read_from_operation, dep_tx_complete_order, read_from_tx_complete_order):
@@ -37,8 +38,7 @@ class RecoveryEngine:
       
         self.history = history
 
-        # set of FunctionalDependency's containing a read op that reads data item written by write op from a 
-        # different transaction
+        # set of ReadFromRelationships for the given history schedule
         self.read_from_relationship_set = set()
 
         # a dict containing the order that each transaction in the history either commits/aborts. The keys are 
@@ -50,7 +50,6 @@ class RecoveryEngine:
         
         # Construct the set of read from relationships
         self.construct_read_from_relationship_set()
-
 
         # Analyze the ReadFromRelationships for recoverable, aca, and strict properties
         self.analyze()
@@ -64,6 +63,8 @@ class RecoveryEngine:
             item.strict_value = self.determine_strict(item)
 
     def get_report(self):
+        """Helper method for generating a recovery report after the history has been analyzed. Analyze() should be 
+        called first before a report can be generated"""
         recovery_report = RecoveryReport()
 
         for read_from_op in self.read_from_relationship_set:
@@ -128,6 +129,7 @@ class RecoveryEngine:
         return RecoverableValue.IS_STRICT if self.commit_exists_between_operations(read_from_op, dep_op, read_from_op.transaction) else RecoverableValue.IS_NOT_STRICT
 
     def determine_tx_completed_order(self):
+        """Iterate over each data_operation, discarding all non commits/aborts, and populate the tx_completed_order dict"""
         order = 1
         for data_op in self.history.schedule:
             if data_op.is_abort() or data_op.is_commit():
@@ -135,6 +137,7 @@ class RecoveryEngine:
                 order += 1
 
     def commit_exists_between_operations(self, start_op=None, end_op=None, ref_tx=None):
+        """Finds whether or not a commit operation exists for a given transaction in the schedule between two given operations."""
         start_idx = self.history.schedule.index(start_op)
         end_idx = self.history.schedule.index(end_op)
         sched_slice = self.history.schedule[start_idx:end_idx]
@@ -145,6 +148,7 @@ class RecoveryEngine:
         return any(op.is_commit() and op.transaction is ref_tx for op in sched_slice)
     
     def abort_exists_between_operations(self, start_op=None, end_op=None, ref_tx=None):
+        """Finds whether or not an abort operation exists for a given transaction in the schedule between two given operations."""
         start_idx = self.history.schedule.index(start_op)
         end_idx = self.history.schedule.index(end_op)
         schedule_slice = self.history.schedule[start_idx:end_idx]

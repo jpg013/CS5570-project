@@ -2,20 +2,18 @@ import random
 from data_operation import DataOperation
 
 class Transaction:
-    """ Transaction class takes a list of data_items and generates  
-        a random list of data operations (read/write) for the data items,
-        including a commit/abort operation. The Transaction class also exposes
-        a make_generator method which will allow the program to iterate through
-        each data_operation by calling next() until the tranasction ops are exhausted. 
-    """
+    """ Transaction class represents the main component model in concurrency control. It contains a list 
+    of data_items and a unique integer id. The data_items contained are a sequence of reads/writes and the 
+    last data item must always be either the commit or abort operation. """
   
     def __init__(self, id):
         self.data_operations = []
         self.id = id
 
     def commit_type(self):
+        """Returns the operation_type for the transaction commit/abort operatoin"""
         commit_op = next(x for x in self.data_operations if x.is_abort() or x.is_commit() )
-        return commit_op.operation_type
+        return commit_op.operation_type if commit_op is not None else None
 
     def validate(self):
         """validates that the transaction passes the formal definition of a transaction:
@@ -49,9 +47,12 @@ class Transaction:
         return True
 
     def add_data_operation(self, data_operation):
+        """Helper method to append a data operation to the transaction operation list."""
         self.data_operations.append(data_operation)
         
+        
     def print_pretty(self):
+        """Helper method for printing out the transaction to stdout""" 
         for op in self.data_operations:
             op.print_pretty()
 

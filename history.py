@@ -4,7 +4,10 @@ from app_config import AppConfig
 import sys
 
 class History:
-    """ History class """
+    """History class as defined in concurrency control and recovery. A complete history is a sequence of interleaved 
+    transactions. The given history class can be implemented in two ways. By instantiating with a list of transactions and 
+    calling interleave_transaction_schedule() to randomly interleave the transaction data_operations, or by manually setting the
+    transaction schedule with set_schedule."""
   
     def __init__(self, transactions=None):
         if transactions is None:
@@ -22,6 +25,7 @@ class History:
         return self
 
     def print_pretty(self):
+        """Helper method for pretty printing out the history schedule"""
         for item in self.schedule:
             item.print_pretty()
 
@@ -31,6 +35,7 @@ class History:
                 print("")
 
     def format_pretty(self):
+        """Same as print_pretty but returns a string and doesn't print to stdout"""
         format = ""
         
         for item in self.schedule:
