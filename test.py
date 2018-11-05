@@ -18,7 +18,7 @@ while True:
         inp.setText("")
         try:
             hist = HistoryQueryBuilder(inpText).process()
-            t = hist.pretty_print()
+            t = hist.print_pretty()
             txt.setText(t)
         except Exception as e:
             print(e)

@@ -19,7 +19,7 @@ type_switcher = {
 }
 
 class DataOperation:
-  """ DataOperation class holds two properties, data_item (Int) and and operation type (String). """
+  """DataOperation class holds two properties, data_item (Int) and and operation type (String). """
   
   def __init__(self, operation_type, transaction, data_item=None):
     if operation_type is None:
@@ -78,6 +78,5 @@ class DataOperation:
       
       return formatted_item
 
-  def pretty_print(self):
+  def print_pretty(self):
     print(self.format_pretty(), end="")
-    return self.format_pretty()
