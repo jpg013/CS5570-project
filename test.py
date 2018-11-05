@@ -1,3 +1,4 @@
+
 from graphics import *
 from history import History
 from history_query_builder import HistoryQueryBuilder
@@ -18,7 +19,7 @@ while True:
         inp.setText("")
         try:
             hist = HistoryQueryBuilder(inpText).process()
-            t = hist.print_pretty()
+            t = hist.format_pretty()
             txt.setText(t)
         except Exception as e:
             print(e)
