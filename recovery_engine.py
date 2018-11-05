@@ -195,7 +195,10 @@ class RecoveryEngine:
                 
                 # If dep_op is reading a write from the same transaction then we can simply break out and continue;
                 if op.transaction is dep_op.transaction:
-                    break
+                    if op.is_write() and dep_op.is_read():
+                        break
+                    else:
+                        continue
 
                 abort_exists = self.abort_exists_between_operations(op, dep_op, op.transaction)
 

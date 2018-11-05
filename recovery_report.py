@@ -30,7 +30,7 @@ class RecoveryResult:
             'overwrites' if self.dep_op.is_write() else 'reads from',
             self.read_from_op.format_pretty(),
             self.read_from_op.transaction.id, 
-            'commits' if self.strict_value is RecoverableValue.IS_STRICT else 'does not commit before',
+            'commits before' if self.strict_value is RecoverableValue.IS_STRICT else 'does not commit before',
             self.dep_op.format_pretty(), 
         )
 
