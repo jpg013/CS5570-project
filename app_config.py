@@ -12,3 +12,7 @@ class AppConfig:
   @staticmethod
   def get(name):
     return AppConfig.__config[name]
+
+  @staticmethod
+  def set(name, val):
+    AppConfig.__config[name] = val

@@ -158,13 +158,13 @@ class RecoveryReport:
         print(self.report)
 
     def is_recoverable(self):
-        return self.is_history_recoverable is RecoverableValue.IS_RECOVERABLE
+        return self.is_history_recoverable is not RecoverableValue.IS_NOT_RECOVERABLE
 
     def is_aca(self):
-        return self.is_history_aca is RecoverableValue.IS_ACA
+        return self.is_history_aca is not RecoverableValue.IS_NOT_ACA
 
     def is_strict(self):
-        return self.is_history_strict is RecoverableValue.IS_STRICT
+        return self.is_history_strict is not RecoverableValue.IS_NOT_STRICT
 
     def process_results(self, read_from_relationship_set):
         for item in read_from_relationship_set:

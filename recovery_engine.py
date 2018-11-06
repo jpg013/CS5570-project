@@ -87,8 +87,9 @@ class RecoveryEngine:
             is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.COMMIT:
+            # TODO - I THINK THIS CASE IS ALWAYS RECOVERABLE, VERIFY THIS.
             # case2: dep_tx aborts while read_from_tx commits, for this to be recoverable dep_tx must abort after read_from_tx commits
-            is_recoverable = dep_tx_complete_order < read_from_tx_complete_order
+            is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.ABORT:
             # case3: dep_tx commits while read_from_tx aborts, for this to be recoverable dep_tx must commit after read_from_tx aborts
