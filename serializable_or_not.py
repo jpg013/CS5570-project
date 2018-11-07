@@ -40,9 +40,10 @@ def serializable_or_not(hist):
         cycle = False
     #print(l)
     ret = ((not cycle), l)
+    print(ret)
     return ret                 #return the opposite if we found a cycle (serializable if cycle == false
 
-'''
+
 def test_serializable():
     serial_input = "w1[x] r3[z] r2[x] c2 c1"
     not_serial_input = "w1[x] w2[x] w2[y] c2 w1[y] w3[x] w3[y] c3 c1"
@@ -62,4 +63,4 @@ if(test):
     print("pass")
 else:
     print("fail")
-'''
+

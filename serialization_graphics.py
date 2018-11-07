@@ -3,7 +3,7 @@ from graphics import *
 #pynput https://pypi.org/project/pynput/
 #http://mcsp.wartburg.edu/zelle/python/graphics/graphics.pdf
 
-def drawSerializationGraph(history,relations): #remove default parameters after testing
+def drawSerializationGraph(win, history,relations): #remove default parameters after testing
     
     transactionList = []
     
@@ -13,15 +13,15 @@ def drawSerializationGraph(history,relations): #remove default parameters after 
     #==CONSTANTS==
     
     #screen-size
-    xMax = 600
-    yMax = 600
+    xMax = 300
+    yMax = 300
     
     circleScalingNumber = 20 #randomly chosen scaling number for circle size
     lineScalingNumber = 3 #randomly chosen scaling number for line offset
 
     #==END CONSTANTS==
 
-    win = GraphWin('test', xMax, yMax)
+    #win = GraphWin('test', xMax, yMax)
 
     #==START SETUP CIRCLES==
     circleSize = (xMax+yMax)/circleScalingNumber #circle size based on screen-size and scaling number
@@ -53,6 +53,10 @@ def drawSerializationGraph(history,relations): #remove default parameters after 
     c4 = Circle(c4Point,circleSize)
 
     #==END SETUP CIRCLES==
+
+    circleList = []
+    lineList = []
+    labelList = []
 
 
     #==START DRAW LINES==
@@ -97,11 +101,13 @@ def drawSerializationGraph(history,relations): #remove default parameters after 
                 lineRightPoint = Point(circlePointList[j].x+offset,circlePointList[j].y)
                 newLine = Line(lineLeftPoint,lineRightPoint)
                 newLine.draw(win)
+                lineList.append(newLine)
 
                 #build label
                 labelPoint = (Point((lineLeftPoint.x+lineRightPoint.x)/2,(lineLeftPoint.y+lineRightPoint.y)/2))
                 label = Text(labelPoint,labelText)
                 label.draw(win)
+                labelList.append(label)
                 
             #offset for y
             if y:
@@ -115,11 +121,13 @@ def drawSerializationGraph(history,relations): #remove default parameters after 
                 lineRightPoint = Point(circlePointList[j].x,circlePointList[j].y+offset)
                 newLine = Line(lineLeftPoint,lineRightPoint)            
                 newLine.draw(win)
+                lineList.append(newLine)
 
                 #build label
                 labelPoint = (Point((lineLeftPoint.x+lineRightPoint.x)/2,(lineLeftPoint.y+lineRightPoint.y)/2))
                 label = Text(labelPoint,labelText)
                 label.draw(win)
+                labelList.append(label)
 
     #==END DRAW LINES==
 
@@ -135,18 +143,28 @@ def drawSerializationGraph(history,relations): #remove default parameters after 
     #we also have no plans to have more than 4 transactions so this is fine for the project
     if 1 in transactionList:
         c1.draw(win)
-        Text(c1Point,"T1").draw(win)
+        label = Text(c1Point,"T1").draw(win)
+        labelList.append(label)
+        circleList.append(c1)
     if 2 in transactionList:
         c2.draw(win)
-        Text(c2Point,"T2").draw(win)
+        label = Text(c2Point,"T2").draw(win)
+        labelList.append(label)
+        circleList.append(c2)
     if 3 in transactionList:
         c3.draw(win)
-        Text(c3Point,"T3").draw(win)
+        label = Text(c3Point,"T3").draw(win)
+        labelList.append(label)
+        circleList.append(c3)
     if 4 in transactionList:
         c4.draw(win)
-        Text(c4Point,"T4").draw(win)
+        label = Text(c4Point,"T4").draw(win)
+        labelList.append(label)
+        circleList.append(c4)
 
-    win.getMouse()
-    win.close()
+    return (circleList,lineList,labelList)
 
+    
+    
+    
 

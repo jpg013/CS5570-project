@@ -144,18 +144,21 @@ class RecoveryReport:
         hist_title = self.history.format_pretty()
         report = '\nHistory Recovery Report\n{0}\n'.format(hist_title)
 
-        report += "=" * len(hist_title)
+        report += "=" * 20
 
         report += self.generate_recoverable_report()
         report += self.generate_aca_report()
         report += self.generate_strict_report()
 
-        report += "\n" + "=" * len(hist_title) + "\n"
+        report += "\n" + "=" * 20 + "\n"
         
         self.report = report
 
     def display_pretty(self):
         print(self.report)
+
+    def give_report(self):
+        return(self.report)
 
     def is_recoverable(self):
         return self.is_history_recoverable is RecoverableValue.IS_RECOVERABLE

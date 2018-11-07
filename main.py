@@ -16,8 +16,7 @@ def checks(hist):
         print("The history is serializable", end = "\n")
     else:
         print("The history is not serializable", end = "\n")
-        
-    drawSerializationGraph(hist,temp[1])
+    return (report, temp)
 
 def main():
     not_recoverable_hist_input = 'w1[x] w1[y] r2[u] w2[x] r2[y] w2[y] c2 w1[z] c1'
