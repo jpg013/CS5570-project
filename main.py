@@ -4,7 +4,6 @@ from data_generation import DataGeneration
 from recovery_engine import RecoveryEngine
 from serializable_or_not import serializable_or_not
 from app_config import AppConfig
-import matplotlib.pyplot as plt
 
 def checks(hist):
     recovery_engine = RecoveryEngine(hist)
