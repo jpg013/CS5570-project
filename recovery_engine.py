@@ -11,7 +11,7 @@ class ReadFromRelationship:
     recoverable, aca and strict properties.
     """
 
-    def __init__(self, dependent_operation, read_from_operation, dep_tx_complete_order, read_from_tx_complete_order):
+    def __init__(self, dependent_operation, read_from_operation):
         if dependent_operation is None:
             raise Exception('dependent_operation must be defined.')
 
@@ -20,13 +20,11 @@ class ReadFromRelationship:
 
         self.dependent_operation = dependent_operation
         self.read_from_operation = read_from_operation
-        self.dep_tx_complete_order = dep_tx_complete_order
-        self.read_from_tx_complete_order = read_from_tx_complete_order
         
         # Values 
-        self.recoverable_value = RecoverableValue.NOT_AVAILABLE
-        self.aca_value = RecoverableValue.NOT_AVAILABLE
-        self.strict_value = RecoverableValue.NOT_AVAILABLE
+        self.recoverable_value = None
+        self.aca_value = None
+        self.strict_value = None
 
 class RecoveryEngine:
     """RecoveryEngine class. Given a history will determine whether or not
@@ -38,9 +36,8 @@ class RecoveryEngine:
       
         self.history = history
 
-        # set of ReadFromRelationships for the given history schedule
         self.read_from_relationship_set = set()
-
+        
         # a dict containing the order that each transaction in the history either commits/aborts. The keys are 
         # transaction ids, and the value is the order of completion, starting at index 1.
         self.tx_completed_order = {}
@@ -48,15 +45,14 @@ class RecoveryEngine:
         # Determine the order in which the transactions completed. This is needed for recoverability
         self.determine_tx_completed_order()
         
-        # Construct the set of read from relationships
-        self.construct_read_from_relationship_set()
-
         # Analyze the ReadFromRelationships for recoverable, aca, and strict properties
         self.analyze()
         
     def analyze(self):
         """Iterates over each read from relationship computes recoverable/aca/strict property of each."""
         
+        self.construct_read_from_relationship_set()
+
         for item in self.read_from_relationship_set:
             item.recoverable_value = self.determine_recoverable(item)
             item.aca_value = self.determine_aca(item)
@@ -89,7 +85,7 @@ class RecoveryEngine:
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.COMMIT:
             # TODO - I THINK THIS CASE IS ALWAYS RECOVERABLE, VERIFY THIS.
             # case2: dep_tx aborts while read_from_tx commits, for this to be recoverable dep_tx must abort after read_from_tx commits
-            is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
+            is_recoverable = True #read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.ABORT:
             # case3: dep_tx commits while read_from_tx aborts, for this to be recoverable dep_tx must commit after read_from_tx aborts
@@ -97,14 +93,13 @@ class RecoveryEngine:
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.ABORT:
             # case4: dep_tx and read_from_tx both abort, then dep_tx must abort before read_from_tx
-            is_recoverable = dep_tx_complete_order < read_from_tx_complete_order
+            is_recoverable = read_from_tx_complete_order > dep_tx_complete_order
 
         # we should never reach this case?
         if is_recoverable is None:
             raise Exception('invalid recoverability')
 
         return RecoverableValue.IS_RECOVERABLE if is_recoverable else RecoverableValue.IS_NOT_RECOVERABLE
-
 
     def determine_aca(self, read_from_relationship):
         """To determine aca we follow the logic that if T1 explicitly reads data item x from T2, then T2 must commit 
@@ -166,9 +161,8 @@ class RecoveryEngine:
         3) if there is some wk(x) such that wj(x) < wk(x) < ri(x), then ak < ri(x)
         """
         
-        # init the set
-        self.read_from_relationship_set = set()
-        
+        violations = []
+
         # Schedule slice
         schedule = self.history.schedule[0:]
 
@@ -208,22 +202,21 @@ class RecoveryEngine:
                         continue
 
                 abort_exists = self.abort_exists_between_operations(op, dep_op, op.transaction)
+                #commit_exists = self.commit_exists_between_operations(op, dep_op, op.transaction)
 
                 if abort_exists:
                     continue
-                
+
+                #if commit_exists:
+                    #continue
+
                 # Passed all the criteria, so op is being read from.
                 read_from_op = op
                 break
 
-            # If we didnt' find a write operation keep going
+            # If we didn't find a write operation keep going
             if read_from_op is None:
                 continue
-            
+
             # There exists a read from relation. Add to the set.
-            self.read_from_relationship_set.add(ReadFromRelationship(
-                dep_op, 
-                read_from_op,
-                self.tx_completed_order[dep_op.transaction.id],
-                self.tx_completed_order[read_from_op.transaction.id]
-            ))
+            self.read_from_relationship_set.add(ReadFromRelationship(dep_op, read_from_op))
