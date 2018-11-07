@@ -65,12 +65,11 @@ class RecoveryEngine:
     def get_report(self):
         """Helper method for generating a recovery report after the history has been analyzed. Analyze() should be 
         called first before a report can be generated"""
-        recovery_report = RecoveryReport()
+        recovery_report = RecoveryReport(self.history, self.read_from_relationship_set)
 
-        for read_from_op in self.read_from_relationship_set:
-            recovery_report.process_result(read_from_op)
-        
-        return recovery_report.build_report(self.history)
+        recovery_report.build_report()
+
+        return recovery_report
             
     def determine_recoverable(self, read_from_relationship):
         """Rules for determining whether dep_op is recoverable with regards to write_tx. Returns True is recoverable else False"""
@@ -89,11 +88,11 @@ class RecoveryEngine:
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.COMMIT:
             # case2: dep_tx aborts while read_from_tx commits, for this to be recoverable dep_tx must abort after read_from_tx commits
-            is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
+            is_recoverable = dep_tx_complete_order < read_from_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.COMMIT and read_from_tx.commit_type() is OperationType.ABORT:
-            # case3: dep_tx commits while read_from_tx aborts, for this to be recoverable dep_tx must abort before read_from_tx commits
-            is_recoverable = dep_tx_complete_order < read_from_tx_complete_order
+            # case3: dep_tx commits while read_from_tx aborts, for this to be recoverable dep_tx must commit after read_from_tx aborts
+            is_recoverable = read_from_tx_complete_order < dep_tx_complete_order
 
         if dep_tx.commit_type() is OperationType.ABORT and read_from_tx.commit_type() is OperationType.ABORT:
             # case4: dep_tx and read_from_tx both abort, then dep_tx must abort before read_from_tx
@@ -191,6 +190,13 @@ class RecoveryEngine:
             for op in reversed(prev_slice):
                 # only care about same data item
                 if op.data_item != dep_op.data_item:
+                    continue
+
+                # There are two conditions for a reads from relationship to exist: 
+                # 1) an "explicit" reads-from - e.g. w2[x] r1[x]
+                # 2) an "implicit" reads-from - w1[x] w2[x]
+                # It's worth noting that r1[x] w[2] does not create a reads from relationship
+                if op.is_read():
                     continue
                 
                 # If dep_op is reading a write from the same transaction then we can simply break out and continue;

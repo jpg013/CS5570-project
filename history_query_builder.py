@@ -1,7 +1,6 @@
 import re
 from data_operation import OperationType, DataOperation
 from transaction import Transaction
-import collections
 from history import History
 from app_config import AppConfig
 
@@ -85,9 +84,6 @@ class HistoryQueryBuilder:
 
         data_item = data_items[0][0]
 
-        if data_item not in AppConfig.get('data_set'):
-            raise Exception('invalid data item - {0}'.format(data_item))
-        
         return data_item
 
 

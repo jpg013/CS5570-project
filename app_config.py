@@ -3,7 +3,7 @@ class AppConfig:
     # Number of transactions per history
     "transaction_count": {
       "min": 1,
-      "max": 3
+      "max": 4
     },
     # Set of allowed data items
     "data_set": set(["u", "x", "y", "z"])
