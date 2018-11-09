@@ -9,3 +9,39 @@ body {
 a, u {
   text-decoration: none;
 }
+
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  background-color: #FFFFFF;
+  color: rgb(39, 40, 51);
+}
+
+body {
+  overflow: auto;
+}
+
+input {
+  :focus {
+    outline: none;
+  }
+}
+
+select {
+  :focus {
+    outline: none;
+  }
+}
+
+.root {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
