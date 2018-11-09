@@ -6,6 +6,7 @@ import GenerateIcon from './icons/GenerateIcon';
 import ScheduleIcon from './icons/ScheduleIcon';
 import Spinner from './components/Spinner';
 import styles from './App.module.css';
+import ScheduleDisplay from './components/ScheduleDisplay';
 import axios from 'axios';
 
 class App extends React.PureComponent {
@@ -27,11 +28,14 @@ class App extends React.PureComponent {
       history: undefined // reset the history
     }));
 
-    const result = await axios.get('/generate_history');
+    const { data } = await axios.get('/generate_history');
 
-    console.log(result);
-
-    // this.
+    setTimeout(() => {
+      this.setState(() => ({
+        status: 'waiting',
+        history: data,
+      }));
+    }, 1000)
   }
 
   onGenerateHistory() {
@@ -79,6 +83,7 @@ class App extends React.PureComponent {
 
           <div className={ styles['App-History'] }>
             { this.state.status === 'fetching' && <Spinner /> }
+            { this.state.history && <ScheduleDisplay schedule={ this.state.history.schedule }/> }
           </div>
         </div>
       </div>
