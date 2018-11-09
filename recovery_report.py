@@ -74,7 +74,10 @@ class RecoveryReport:
         self.process_results(read_from_relationship_set)
         
     def generate_strict_report(self):
-        if len(self.recovery_results) == 0 or len(self.strict_violations) == 0:  
+        if len(self.recovery_results) == 0:
+            return ""
+        
+        if self.is_strict():
             return "\n\nhistory is ST"
         
         strict_report = '\n\nhistory is not strict because:'
@@ -85,10 +88,15 @@ class RecoveryReport:
         return strict_report
 
     def generate_aca_report(self):
-        if len(self.recovery_results) == 0 or len(self.aca_violations) == 0:  
-            return "\n\nhistory is ACA"
+        available_values = list(filter(lambda x: x.aca_value is RecoverableValue.IS_ACA or x.aca_value is RecoverableValue.IS_NOT_ACA, self.recovery_results))
         
-        aca_report = '\n\nhistory is not aca because:'
+        if len(available_values) == 0:
+            return ""
+
+        if self.is_cascadeless():
+            return "history is cacadeless"
+
+        aca_report = '\n\nhistory is not cascadeless because:'
 
         for idx, result in enumerate(self.aca_violations):
             aca_report += '\n{0}) {1}'.format(idx+1, result)
@@ -100,7 +108,8 @@ class RecoveryReport:
         
         if len(self.recovery_results) == 0:
             recoverable_report += 'history recovery is not availabe because there do not exist any read-from relationships.'
-        elif len(self.recoverable_violations) == 0:
+        
+        if (self.is_recoverable()):
             recoverable_report += 'history is recoverable.'
         else:
             recoverable_report += 'history is not recoverable because:'
@@ -166,10 +175,7 @@ class RecoveryReport:
     def is_recoverable(self):
         return all(item.recoverable_value is RecoverableValue.IS_RECOVERABLE for item in self.recovery_results)
 
-    def is_aca(self):
-        if not self.is_recoverable():
-            return False
-
+    def is_cascadeless(self):
         available_values = list(filter(lambda x: x.aca_value is RecoverableValue.IS_ACA or x.aca_value is RecoverableValue.IS_NOT_ACA, self.recovery_results))
 
         if len(available_values) == 0:

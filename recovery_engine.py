@@ -201,14 +201,9 @@ class RecoveryEngine:
                     else:
                         continue
 
-                abort_exists = self.abort_exists_between_operations(op, dep_op, op.transaction)
-                #commit_exists = self.commit_exists_between_operations(op, dep_op, op.transaction)
-
-                if abort_exists:
+                # Satisfy #2 - cannot read aborted data
+                if (self.abort_exists_between_operations(op, dep_op, op.transaction) == True):
                     continue
-
-                #if commit_exists:
-                    #continue
 
                 # Passed all the criteria, so op is being read from.
                 read_from_op = op

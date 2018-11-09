@@ -16,8 +16,14 @@ def checks(hist):
         print("The history is not serializable", end = "\n")
 
 def main():
-    input_str = "w1[x] c1 r2[x] w2[x] a2"
-    history = HistoryQueryBuilder(input_str).process()
+    #input_str = "w1[x] w2[x] c2 c1"
+    #history = HistoryQueryBuilder(input_str).process()
+    #recovery_engine = RecoveryEngine(history)
+    #report = recovery_engine.get_report()
+    #report.display_pretty()
+    data_generation = DataGeneration()
+    history = History(data_generation.generate_transactions())
+    history.interleave_transaction_schedule()
     recovery_engine = RecoveryEngine(history)
     report = recovery_engine.get_report()
     report.display_pretty()

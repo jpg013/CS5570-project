@@ -13,7 +13,7 @@ class RecoveryTest (unittest.TestCase):
     report = recovery_engine.get_report()
 
     self.assertFalse(report.is_recoverable())
-    self.assertFalse(report.is_aca())
+    self.assertFalse(report.is_cascadeless())
     self.assertFalse(report.is_strict())
 
   def test_recoverable_not_aca(self):
@@ -23,9 +23,10 @@ class RecoveryTest (unittest.TestCase):
     report = recovery_engine.get_report()
 
     self.assertTrue(report.is_recoverable())
-    self.assertFalse(report.is_aca())
+    self.assertFalse(report.is_cascadeless())
     self.assertFalse(report.is_strict())
   
+
   def test_aca_not_strict(self):
     input_str = 'w1[x] w1[y] r2[u] w2[x] w1[z] c1 r2[y] w2[y] c2'
     history = HistoryQueryBuilder(input_str).process()
@@ -33,9 +34,9 @@ class RecoveryTest (unittest.TestCase):
     report = recovery_engine.get_report()
 
     self.assertTrue(report.is_recoverable())
-    self.assertTrue(report.is_aca())
+    self.assertTrue(report.is_cascadeless())
     self.assertFalse(report.is_strict())
-  
+
   def test_strict(self):
     input_str = 'r1[x] w1[x] c1 r2[x] w2[x] c2'
     history = HistoryQueryBuilder(input_str).process()
@@ -43,9 +44,9 @@ class RecoveryTest (unittest.TestCase):
     report = recovery_engine.get_report()
 
     self.assertTrue(report.is_recoverable())
-    self.assertTrue(report.is_aca())
+    self.assertTrue(report.is_cascadeless())
     self.assertTrue(report.is_strict())
-  
+
 if __name__ == '__main__':
   unittest.main()
 
