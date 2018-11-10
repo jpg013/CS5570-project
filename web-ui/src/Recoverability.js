@@ -5,6 +5,10 @@ import axios from 'axios';
 import Spinner from './components/Spinner';
 import { transformScheduleToText } from './lib/data-transform';
 import Button from './components/Button';
+import SuccessIcon from './icons/SuccessIcon';
+import CancelIcon from './icons/CancelIcon';
+import ThumbsUpIcon from './icons/ThumbsUpIcon';
+import ThumbsDownIcon from './icons/ThumbsDownIcon';
 import styles from './Recoverability.module.css';
 
 class Recoverability extends React.PureComponent {
@@ -47,14 +51,32 @@ class Recoverability extends React.PureComponent {
     const compliances = this.state.recovery_results.filter(curr => curr.recoverable_value !== 'IS_NOT_RECOVERABLE');
     const headerTxt = `History is${violations.length > 0 ? ' not ': ' '} recoverable.`;
 
+    const makeViolation = (curr, idx) => {
+      const isRecoverable = curr.recoverable_value === 'IS_RECOVERABLE';
+
+      const cxs = {};
+      cxs[styles['Recoverability-Violations-Result-List-Item']] = true
+      cxs[styles['Recoverability-Violations-Result-List-Item-Error']] = !isRecoverable;
+
+      return (
+        <div key={ idx } className={ styles['Recoverability-Violations-Result-List-Item-Container' ]}>
+          <div className={ cx(cxs) }>
+            { isRecoverable ? <SuccessIcon /> : <CancelIcon />}
+            { curr.recoverable_msg }
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className={ styles['Recoverability-Violations-Result']} >
         <div className={ styles['Recoverability-Violations-Result-Header']} >
+          { violations.length === 0 ? <ThumbsUpIcon /> : <ThumbsDownIcon /> }
           { headerTxt }
         </div>
 
         <div className={ styles['Recoverability-Violations-Result-List']} >
-
+          { violations.map(makeViolation) }
         </div>
       </div>
     )
@@ -79,7 +101,7 @@ class Recoverability extends React.PureComponent {
   renderView() {
     if (!this.props.history) {
       return (
-        <span className={ styles['Recoverability-NoInputMsg']} >Generate or enter a history schedule to see recoverability results.</span>
+        <span className={ styles['Recoverability-NoInputMsg']} >Generate or enter a history schedule to view recoverability results.</span>
       )
     }
 

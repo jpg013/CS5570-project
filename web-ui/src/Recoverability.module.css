@@ -1,7 +1,7 @@
 .Recoverability {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   padding-top: 30px;
 }
 
@@ -9,4 +9,78 @@
   font-size: 18px;
   font-weight: 300;
   color: #717274;
+}
+
+.Recoverability-Violations {
+  display: block;
+  padding-top: 10px;
+  width: 100%;
+}
+
+.Recoverability-Violations-Result {
+  margin-top: 20px;
+  width: 100%;
+  display: block;
+  border-radius: 2px;
+  border: 1px solid #e8e8e8;
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+.Recoverability-Violations-Result-Header {
+  background-color: #f9f9f9;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #2c2d30;
+  padding: 0 10px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: .5px;
+  box-sizing: border-box;
+  border: 1px solid #e8e8e8;
+}
+
+.Recoverability-Violations-Result-Header svg {
+  height: 24px;
+  width: 24px;
+  fill: #717274;
+  margin-right: 10px;
+}
+
+.Recoverability-Violations-Result-List {
+
+}
+
+.Recoverability-Violations-Result-List-Item-Container {
+  font-size: 18px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #2c2d30;
+  height: 56px;
+  letter-spacing: .5px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.Recoverability-Violations-Result-List-Item {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.Recoverability-Violations-Result-List-Item svg {
+  height: 24px;
+  width: 24px;
+  fill: #008952;
+  margin-right: 10px;
+}
+
+
+.Recoverability-Violations-Result-List-Item-Error svg {
+  fill: #ff9000;
 }

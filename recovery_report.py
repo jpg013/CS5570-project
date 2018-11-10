@@ -16,7 +16,7 @@ class RecoveryResult:
 
         is_recoverable = self.recoverable_value is RecoverableValue.IS_RECOVERABLE
         
-        return '{0} {1} {2} and T{3} {4} {5} T{6} {7}.'.format(
+        return '{0} {1} {2} and Transaction {3} {4} {5} Transaction {6} {7}.'.format(
             self.dep_op.format_pretty(), 
             'overwrites' if self.dep_op.is_write() else 'reads from',
             self.read_from_op.format_pretty(),
