@@ -4,46 +4,84 @@ import Button from './components/Button'
 import BuildIcon from './icons/BuildIcon';
 import GenerateIcon from './icons/GenerateIcon';
 import ScheduleIcon from './icons/ScheduleIcon';
-import Spinner from './components/Spinner';
 import styles from './App.module.css';
-import ScheduleDisplay from './components/ScheduleDisplay';
+import ScheduleInput from './ScheduleInput'
 import axios from 'axios';
 
 class App extends React.PureComponent {
   state = {
-    status: 'waiting',
+    schedule: {
+      status: 'waiting',
+      error: undefined,
+      value: []
+    },
     history: undefined,
-    activeTab: ''
   }
 
   constructor(props) {
     super(props);
 
     this.onGenerateHistory = this.onGenerateHistory.bind(this);
+    this.onScheduleEdit = this.onScheduleEdit.bind(this);
+    this.onChanges = this.onChanges.bind(this);
   }
 
   async fetchGeneratedHistory() {
-    this.setState(() => ({
-      status: 'fetching',
-      history: undefined // reset the history
-    }));
+    this.setState(prevState => {
+      return {
+        ...prevState,
+        schedule: {
+          ...prevState.schedule,
+          status: 'in-flight',
+          error: undefined,
+          value: [],
+        }
+      };
+    });
 
-    const { data } = await axios.get('/generate_history');
+    const { data: history } = await axios.get('/generate_history');
 
     setTimeout(() => {
-      this.setState(() => ({
-        status: 'waiting',
-        history: data,
-      }));
+      this.setState(prevState => {
+        return {
+          ...prevState,
+          history,
+          schedule: {
+            ...prevState.schedule,
+            status: 'waiting',
+            value: history.schedule,
+          }
+        };
+      });
     }, 1000)
   }
 
   onGenerateHistory() {
-    if (this.state.status !== 'waiting') {
-      return
+    if (this.state.schedule.status === 'in-flight') {
+      return;
     }
 
     this.fetchGeneratedHistory()
+  }
+
+  onScheduleEdit() {
+    if (this.state.schedule.status !== 'waiting') {
+      return;
+    }
+
+    this.setState(prevState => {
+      return {
+        ...prevState,
+        schedule: {
+          ...prevState.schedule,
+          status: 'edit',
+        }
+      }
+    })
+  }
+
+  onChanges() {
+
   }
 
   render() {
@@ -75,16 +113,20 @@ class App extends React.PureComponent {
               <Button
                 text="Input History"
                 type="default"
+                onClick={ this.onScheduleEdit }
               >
                 <BuildIcon />
               </Button>
             </div>
           </div>
 
-          <div className={ styles['App-History'] }>
-            { this.state.status === 'fetching' && <Spinner /> }
-            { this.state.history && <ScheduleDisplay schedule={ this.state.history.schedule }/> }
-          </div>
+          <ScheduleInput
+            status={ this.state.schedule.status }
+            schedule={ this.state.schedule.value }
+            onEdit={ this.onScheduleEdit }
+            onChanges={ this.onChanges }
+            error={ this.state.schedule.error }
+          />
         </div>
       </div>
     );

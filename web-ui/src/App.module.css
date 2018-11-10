@@ -52,12 +52,3 @@
   line-height: 1.33333333;
   display: inline-block;
 }
-
-.App-History {
-  min-height: 100px;
-  margin-top: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}

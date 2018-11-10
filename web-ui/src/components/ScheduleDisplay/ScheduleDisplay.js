@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 class ScheduleDisplay extends React.PureComponent {
   static propTypes = {
     schedule: PropTypes.array.isRequired,
+    onClick: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -29,7 +30,7 @@ class ScheduleDisplay extends React.PureComponent {
 
   render() {
     return (
-      <div className={ styles.ScheduleDisplay }>
+      <div className={ styles.ScheduleDisplay } onClick={ this.props.onClick }>
         { this.props.schedule.map(this.renderScheduleItem) }
       </div>
     )
