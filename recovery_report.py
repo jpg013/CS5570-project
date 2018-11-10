@@ -52,6 +52,20 @@ class RecoveryResult:
             self.dep_op.format_pretty(), 
         )
 
+    def serialize(self):
+        serial_result = {}
+        serial_result['dep_op'] = self.dep_op.serialize()
+        serial_result['read_from_op'] = self.read_from_op.serialize()
+        serial_result['recoverable_value'] = self.recoverable_value.name
+        serial_result['strict_value'] = self.strict_value.name
+        serial_result['cascade_value'] = self.aca_value.name
+        serial_result['recoverable_msg'] = self.get_recoverable_msg()
+        serial_result['cascade_msg'] = self.get_aca_msg()
+        serial_result['strict_msg'] = self.get_strict_msg()
+
+        return serial_result
+        
+
 class RecoveryReport:
     """RecoveryReport produces recovery results for a given history."""
     
@@ -188,5 +202,9 @@ class RecoveryReport:
 
     def recovery_results_available(self):
         return len(self.recovery_results) > 0
+
+    def serialize(self):
+        return list(map(lambda x: x.serialize(), self.recovery_results)),
+
     
         

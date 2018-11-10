@@ -5,6 +5,7 @@ import BuildIcon from './icons/BuildIcon';
 import GenerateIcon from './icons/GenerateIcon';
 import ScheduleIcon from './icons/ScheduleIcon';
 import ChevronRightIcon from './icons/ChevronRightIcon';
+import ResultsDashboard from './ResultsDashboard';
 import styles from './App.module.css';
 import ScheduleInput from './ScheduleInput'
 import { transformScheduleToText } from './lib/data-transform';
@@ -20,6 +21,9 @@ class App extends React.PureComponent {
       strValue: '',
     },
     history: undefined,
+    results: {
+      selectedTab: 'recoverability',
+    }
   }
 
   constructor(props) {
@@ -28,6 +32,7 @@ class App extends React.PureComponent {
     this.onGenerateHistory = this.onGenerateHistory.bind(this);
     this.onScheduleEdit = this.onScheduleEdit.bind(this);
     this.onChanges = this.onChanges.bind(this);
+    this.onSelectTab = this.onSelectTab.bind(this);
   }
 
   async requestHistoryBuilder(input) {
@@ -40,6 +45,7 @@ class App extends React.PureComponent {
             ...prevState.schedule,
             strValue: input,
             inFlight: true,
+            error: undefined,
           }
         };
       });
@@ -56,6 +62,7 @@ class App extends React.PureComponent {
               inFlight: false,
               status: 'pristine',
               value: history.schedule,
+              error: undefined,
               strValue: transformScheduleToText(history.schedule),
             }
           };
@@ -101,6 +108,7 @@ class App extends React.PureComponent {
           schedule: {
             inFlight: false,
             status: 'pristine',
+            error: undefined,
             strValue: transformScheduleToText(history.schedule),
             value: history.schedule,
           }
@@ -128,6 +136,18 @@ class App extends React.PureComponent {
         schedule: {
           ...prevState.schedule,
           status: 'editing',
+        }
+      }
+    })
+  }
+
+  onSelectTab(name) {
+    this.setState(prevState => {
+      return {
+        ...prevState,
+        results: {
+          ...prevState.results,
+          selectedTab: name,
         }
       }
     })
@@ -199,6 +219,12 @@ class App extends React.PureComponent {
             onChanges={ this.onChanges }
             error={ this.state.schedule.error }
           />
+
+          <ResultsDashboard
+            selectedTab={ this.state.results.selectedTab}
+            onSelectTab={ this.onSelectTab }
+            history={ this.state.history }
+            />
         </div>
       </div>
     );

@@ -6,6 +6,7 @@ from flask import Flask, request, send_from_directory, jsonify
 from data_generation import DataGeneration
 from history import History
 from history_query_builder import HistoryQueryBuilder
+from recovery_engine import RecoveryEngine
 import os
 import json
 
@@ -39,13 +40,21 @@ def generate_history():
 @app.route('/build_history', methods=['POST'])
 def build_history():
     try:
-        print(request.json)
-        print(request.json['input'])
-
         history = HistoryQueryBuilder(request.json['input']).process()
         return jsonify(history.serialize()), 200
     except Exception as e:
-        print('there was an exception', e)
+        resp = {}
+        resp['message'] = 'error'
+        return jsonify(resp), 500
+
+@app.route('/recovery_report', methods=['POST'])
+def get_recovery():
+    try:
+        history = HistoryQueryBuilder(request.json['input']).process()
+        recovery_engine = RecoveryEngine(history)
+        report = recovery_engine.get_report()
+        return jsonify(report.serialize()), 200
+    except Exception as e:
         resp = {}
         resp['message'] = 'error'
         return jsonify(resp), 500

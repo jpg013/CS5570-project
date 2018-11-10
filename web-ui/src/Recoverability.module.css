@@ -1,0 +1,12 @@
+.Recoverability {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 30px;
+}
+
+.Recoverability-NoInputMsg {
+  font-size: 18px;
+  font-weight: 300;
+  color: #717274;
+}

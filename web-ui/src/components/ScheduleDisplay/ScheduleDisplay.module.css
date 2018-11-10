@@ -1,7 +1,6 @@
 .ScheduleDisplay {
   padding: 20px 30px;
   border: 1px solid #e8e8e8;
-  background: #f9f9f9;
   color: #2c2d30;
   border-left-width: 5px;
   margin: 0 auto 1rem;
@@ -12,8 +11,9 @@
   align-items: center;
   justify-content: flex-start;
   cursor: pointer;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.12);
+  background: #FFFFF;
 }
-
 .ScheduleDisplay:hover {
   box-shadow: 0 1px 4px rgba(0,0,0,.15);
 }
