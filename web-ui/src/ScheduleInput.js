@@ -3,7 +3,6 @@ import Spinner from './components/Spinner';
 import styles from './ScheduleInput.module.css';
 import ScheduleDisplay from './components/ScheduleDisplay';
 import TextArea from './components/TextArea';
-import { transformScheduleToText } from './lib/data-transform';
 import PropTypes from 'prop-types';
 
 class ScheduleInput extends React.PureComponent {
@@ -13,44 +12,39 @@ class ScheduleInput extends React.PureComponent {
     status: PropTypes.string.isRequired,
     error: PropTypes.string,
     schedule: PropTypes.array.isRequired,
+    strValue: PropTypes.string.isRequired,
+    dataInFlight: PropTypes.bool.isRequired,
   }
 
   static defaultProps = {
     schedule: []
   }
 
-  constructor(props) {
-    super(props);
-  }
-
-  renderTextArea() {
-    return (
-      <TextArea
-        defaultVal={ transformScheduleToText(this.props.schedule) }
-        onBlur={ this.props.onChanges }
-        />
-    )
-  }
-
   renderDisplay() {
-    if (!this.props.schedule.length) {
-      return null;
+    if (this.props.status === 'editing') {
+      return (
+        <TextArea
+          defaultVal={ this.props.strValue }
+          onBlur={ this.props.onChanges }
+          error={ !!this.props.error }
+          />
+      )
+    } else if (this.props.status === 'pristine') {
+      return (
+        <ScheduleDisplay
+          schedule={ this.props.schedule }
+          onClick={ this.props.onEdit }
+          />
+      )
     }
 
-    return (
-      <ScheduleDisplay
-        schedule={ this.props.schedule }
-        onClick={ this.props.onEdit }
-        />
-    )
+    return null;
   }
 
   render() {
     return (
       <div className={ styles['ScheduleInput'] }>
-        { this.props.status === 'in-flight' && <Spinner />  }
-        { this.props.status === 'waiting' && this.renderDisplay() }
-        { this.props.status === 'edit' && this.renderTextArea() }
+        {  this.props.dataInFlight ? <Spinner /> : this.renderDisplay()  }
       </div>
     );
   }

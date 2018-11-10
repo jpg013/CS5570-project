@@ -27,6 +27,22 @@
   padding: 15px;
 }
 
+.TextArea-error {
+  border: 1px solid #ff9000;
+  border-left-width: 5px;
+}
+
+.TextArea-error-message {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  color: #ff9000;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.33333333;
+  display: inline-block;
+}
+
 .TextArea-Size {
   visibility: hidden;
   white-space: pre-wrap;
@@ -50,7 +66,17 @@
   padding: 15px;
 }
 
-
 .TextArea:focus {
   outline: none;
+}
+
+.TextArea-Label {
+  color: #717274;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.33333333;
+  display: inline-block;
+  position: absolute;
+  top: -24px;
+  left: 0px;
 }

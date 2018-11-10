@@ -6,7 +6,8 @@ import styles from './TextArea.module.css';
 class TextArea extends React.PureComponent {
   static propTypes = {
     defaultVal: PropTypes.string,
-    onBlur: PropTypes.func.isRequired
+    onBlur: PropTypes.func.isRequired,
+    error: PropTypes.bool
   }
 
   constructor(props) {
@@ -46,12 +47,22 @@ class TextArea extends React.PureComponent {
     }
   }
 
+  configureTextAreaCxs() {
+    const cxNames = {};
+    cxNames[styles['TextArea']] = true;
+    cxNames[styles['TextArea-error']] = this.props.error === true;
+
+    return cx(cxNames);
+  }
+
   render() {
     return (
       <div className={ styles['TextArea-Container'] } ref={ this.containerRef }>
+        <div className={ styles['TextArea-Label'] }>Input history in the following format: w1[x] r2[x] c1 a2</div>
+        { this.props.error && <span className={ styles['TextArea-error-message']}>Invalid history input </span> }
         <textarea
           onKeyPress={ this.onKeyPress }
-          className={ styles['TextArea'] }
+          className={ this.configureTextAreaCxs() }
           onBlur={ this.onChanges }
           onInput={ this.onInput }
           ref={ this.inputRef }

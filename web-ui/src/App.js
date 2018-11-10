@@ -4,16 +4,20 @@ import Button from './components/Button'
 import BuildIcon from './icons/BuildIcon';
 import GenerateIcon from './icons/GenerateIcon';
 import ScheduleIcon from './icons/ScheduleIcon';
+import ChevronRightIcon from './icons/ChevronRightIcon';
 import styles from './App.module.css';
 import ScheduleInput from './ScheduleInput'
+import { transformScheduleToText } from './lib/data-transform';
 import axios from 'axios';
 
 class App extends React.PureComponent {
   state = {
     schedule: {
-      status: 'waiting',
+      inFlight: false,
+      status: 'init',
       error: undefined,
-      value: []
+      value: [],
+      strValue: '',
     },
     history: undefined,
   }
@@ -27,36 +31,50 @@ class App extends React.PureComponent {
   }
 
   async requestHistoryBuilder(input) {
-    if (this.state.schedule.status !== 'edit') {
-      return
-    }
-
-    this.setState(prevState => {
-      return {
-        ...prevState,
-        schedule: {
-          ...prevState.schedule,
-          status: 'building',
-        }
-      }
-    });
-
     try {
-      const { data: history } = await axios.post('/build_history', { input });
-
       this.setState(prevState => {
         return {
           ...prevState,
           history,
           schedule: {
             ...prevState.schedule,
-            status: 'waiting',
-            value: history.schedule,
+            strValue: input,
+            inFlight: true,
           }
         };
-      })
+      });
+
+      const { data: history } = await axios.post('/build_history', { input });
+
+      setTimeout(() => {
+        this.setState(prevState => {
+          return {
+            ...prevState,
+            history,
+            schedule: {
+              ...prevState.schedule,
+              inFlight: false,
+              status: 'pristine',
+              value: history.schedule,
+              strValue: transformScheduleToText(history.schedule),
+            }
+          };
+        })
+      }, 1000);
     } catch(e) {
-      console.log(e)
+      setTimeout(() => {
+        this.setState(prevState => {
+          return {
+            ...prevState,
+            schedule: {
+              ...prevState.schedule,
+              inFlight: false,
+              status: 'editing',
+              error: e.message,
+            }
+          };
+        });
+      }, 1000)
     }
   }
 
@@ -66,7 +84,7 @@ class App extends React.PureComponent {
         ...prevState,
         schedule: {
           ...prevState.schedule,
-          status: 'in-flight',
+          inFlight: true,
           error: undefined,
           value: [],
         }
@@ -81,8 +99,9 @@ class App extends React.PureComponent {
           ...prevState,
           history,
           schedule: {
-            ...prevState.schedule,
-            status: 'waiting',
+            inFlight: false,
+            status: 'pristine',
+            strValue: transformScheduleToText(history.schedule),
             value: history.schedule,
           }
         };
@@ -91,7 +110,7 @@ class App extends React.PureComponent {
   }
 
   onGenerateHistory() {
-    if (this.state.schedule.status === 'in-flight') {
+    if (this.state.schedule.inFlight) {
       return;
     }
 
@@ -99,7 +118,7 @@ class App extends React.PureComponent {
   }
 
   onScheduleEdit() {
-    if (this.state.schedule.status !== 'waiting') {
+    if (this.state.schedule.inFlight) {
       return;
     }
 
@@ -108,18 +127,30 @@ class App extends React.PureComponent {
         ...prevState,
         schedule: {
           ...prevState.schedule,
-          status: 'edit',
+          status: 'editing',
         }
       }
     })
   }
 
-  onChanges(input) {
-    if (!input) {
+  onChanges(str) {
+    if (this.state.schedule.inFlight) {
       return;
     }
 
-    this.requestHistoryBuilder(input);
+    if (this.state.schedule.strValue.trim() === str.trim() || !str) {
+      this.setState(prevState => {
+        return {
+          ...prevState,
+          schedule: {
+            ...prevState.schedule,
+            status: 'pristine',
+          }
+        };
+      });
+    } else {
+      this.requestHistoryBuilder(str);
+    }
   }
 
   render() {
@@ -135,9 +166,10 @@ class App extends React.PureComponent {
             <span className={ styles['App-banner-title'] }>History Analysis</span>
 
             <div className={ styles['App-banner-actions'] }>
-              <span className={ styles['App-banner-created-txt'] }>
-                Select history option
-              </span>
+              <div className={ styles['App-banner-actions-label'] }>
+                <span>Select history option</span>
+                <ChevronRightIcon />
+              </div>
 
               <Button
                 text="Generate History"
@@ -159,8 +191,10 @@ class App extends React.PureComponent {
           </div>
 
           <ScheduleInput
+            dataInFlight={ this.state.schedule.inFlight }
             status={ this.state.schedule.status }
             schedule={ this.state.schedule.value }
+            strValue={ this.state.schedule.strValue }
             onEdit={ this.onScheduleEdit }
             onChanges={ this.onChanges }
             error={ this.state.schedule.error }

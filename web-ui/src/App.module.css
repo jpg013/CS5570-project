@@ -44,11 +44,22 @@
   fill: #008952;
 }
 
-.App-banner-created-txt {
-  padding-left: 16px;
-  margin-right: 16px;
+.App-banner-actions-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 16px;
+}
+
+.App-banner-actions-label span {
   color: #717274;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.33333333;
-  display: inline-block;
+}
+
+.App-banner-actions-label svg {
+  fill: #717274;
+  height: 18px;
+  width: 18px;
+  margin-left: 3px;
 }
