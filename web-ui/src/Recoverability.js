@@ -27,6 +27,12 @@ class Recoverability extends React.PureComponent {
     this.getRecoverability = this.getRecoverability.bind(this);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.history !== this.props.history) {
+      this.setState(() => ({ recovery_results: undefined }));
+    }
+  }
+
   async getRecoverability() {
     if (this.state.inFlight) {
       return
@@ -77,6 +83,91 @@ class Recoverability extends React.PureComponent {
 
         <div className={ styles['Recoverability-Violations-Result-List']} >
           { violations.map(makeViolation) }
+          { violations.length === 0 && compliances.map(makeViolation) }
+        </div>
+      </div>
+    )
+  }
+
+  renderCascade() {
+    const violations = this.state.recovery_results.filter(curr => curr.cascade_value === 'IS_NOT_ACA');
+    const compliances = this.state.recovery_results.filter(curr => curr.cascade_value !== 'IS_NOT_ACA');
+
+    if ((violations.length + compliances.length) === 0) {
+      return null;
+    }
+
+    const headerTxt = `History is${violations.length > 0 ? ' not ': ' '} cascadeless.`;
+
+    const makeViolation = (curr, idx) => {
+      const isCascadeless = curr.recoverable_value === 'IS_ACA';
+
+      const cxs = {};
+      cxs[styles['Recoverability-Violations-Result-List-Item']] = true
+      cxs[styles['Recoverability-Violations-Result-List-Item-Error']] = !isCascadeless;
+
+      return (
+        <div key={ idx } className={ styles['Recoverability-Violations-Result-List-Item-Container' ]}>
+          <div className={ cx(cxs) }>
+            { isCascadeless ? <SuccessIcon /> : <CancelIcon />}
+            { curr.cascade_msg }
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className={ styles['Recoverability-Violations-Result']} >
+        <div className={ styles['Recoverability-Violations-Result-Header']} >
+          { violations.length === 0 ? <ThumbsUpIcon /> : <ThumbsDownIcon /> }
+          { headerTxt }
+        </div>
+
+        <div className={ styles['Recoverability-Violations-Result-List']} >
+          { violations.map(makeViolation) }
+          { violations.length === 0 && compliances.map(makeViolation) }
+        </div>
+      </div>
+    )
+  }
+
+  renderStrict() {
+    const violations = this.state.recovery_results.filter(curr => curr.strict_value === 'IS_NOT_STRICT');
+    const compliances = this.state.recovery_results.filter(curr => curr.strict_value !== 'IS_NOT_STRICT');
+
+    if ((violations.length + compliances.length) === 0) {
+      return null;
+    }
+
+    const headerTxt = `History is${violations.length > 0 ? ' not ': ' '} strict.`;
+
+    const makeViolation = (curr, idx) => {
+      const isStrict = curr.recoverable_value === 'IS_STRICT';
+
+      const cxs = {};
+      cxs[styles['Recoverability-Violations-Result-List-Item']] = true
+      cxs[styles['Recoverability-Violations-Result-List-Item-Error']] = !isStrict;
+
+      return (
+        <div key={ idx } className={ styles['Recoverability-Violations-Result-List-Item-Container' ]}>
+          <div className={ cx(cxs) }>
+            { isStrict ? <SuccessIcon /> : <CancelIcon />}
+            { curr.strict_msg }
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className={ styles['Recoverability-Violations-Result']} >
+        <div className={ styles['Recoverability-Violations-Result-Header']} >
+          { violations.length === 0 ? <ThumbsUpIcon /> : <ThumbsDownIcon /> }
+          { headerTxt }
+        </div>
+
+        <div className={ styles['Recoverability-Violations-Result-List']} >
+          { violations.map(makeViolation) }
+          { violations.length === 0 && compliances.map(makeViolation) }
         </div>
       </div>
     )
@@ -84,7 +175,7 @@ class Recoverability extends React.PureComponent {
 
   renderViolations() {
     if (!this.state.recovery_results || !this.state.recovery_results.length) {
-      return null
+      return <span className={ styles['Recoverability-NoResultMsg']} >Recoverable Results are not available for this history.</span>
     }
 
     // const recovery_violations = this.state.recovery_results.filter(curr => curr.recoverable_value === 'IS_NOT_RECOVERABLE');
@@ -94,6 +185,8 @@ class Recoverability extends React.PureComponent {
     return (
       <div className={ styles['Recoverability-Violations'] }>
         { this.renderRecoverability() }
+        { this.renderCascade() }
+        { this.renderStrict() }
       </div>
     )
   }

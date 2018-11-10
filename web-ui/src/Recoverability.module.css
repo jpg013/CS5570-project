@@ -11,14 +11,21 @@
   color: #717274;
 }
 
+.Recoverability-NoResultMsg {
+  color: currentColor;
+  font-weight: 500;
+  font-size: 18px;
+  padding-top: 20px;
+}
+
 .Recoverability-Violations {
   display: block;
-  padding-top: 10px;
+  padding-top: 20px;
   width: 100%;
 }
 
 .Recoverability-Violations-Result {
-  margin-top: 20px;
+  margin-top: 30px;
   width: 100%;
   display: block;
   border-radius: 2px;

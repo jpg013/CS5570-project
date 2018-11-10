@@ -89,6 +89,7 @@ class App extends React.PureComponent {
     this.setState(prevState => {
       return {
         ...prevState,
+        history: undefined,
         schedule: {
           ...prevState.schedule,
           inFlight: true,
