@@ -50,7 +50,6 @@ class Transaction:
         """Helper method to append a data operation to the transaction operation list."""
         self.data_operations.append(data_operation)
         
-        
     def print_pretty(self):
         """Helper method for printing out the transaction to stdout""" 
         for op in self.data_operations:
@@ -60,4 +59,10 @@ class Transaction:
                 print(" --> ", end="")
             else:
                 print("")
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'data_operations': list(map(lambda x: x.serialize(), self.data_operations)),
+        }
         

@@ -47,6 +47,12 @@ class History:
 
         return format
 
+    def serialize(self):
+        return {
+            'transactions': list(map(lambda x: x.serialize(), self.transactions)),
+            'schedule': list(map(lambda x: x.serialize(), self.schedule)),
+        }
+        
     def interleave_transaction_schedule(self):
         """Create a schedule by interleaving the transaction data operations"""
         if len(self.transactions) == 0:
