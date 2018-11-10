@@ -91,7 +91,7 @@ class Recoverability extends React.PureComponent {
 
   renderCascade() {
     const violations = this.state.recovery_results.filter(curr => curr.cascade_value === 'IS_NOT_ACA');
-    const compliances = this.state.recovery_results.filter(curr => curr.cascade_value !== 'IS_NOT_ACA');
+    const compliances = this.state.recovery_results.filter(curr => curr.cascade_value === 'IS_ACA');
 
     if ((violations.length + compliances.length) === 0) {
       return null;
@@ -100,7 +100,7 @@ class Recoverability extends React.PureComponent {
     const headerTxt = `History is${violations.length > 0 ? ' not ': ' '} cascadeless.`;
 
     const makeViolation = (curr, idx) => {
-      const isCascadeless = curr.recoverable_value === 'IS_ACA';
+      const isCascadeless = curr.cascade_value === 'IS_ACA';
 
       const cxs = {};
       cxs[styles['Recoverability-Violations-Result-List-Item']] = true
@@ -142,7 +142,7 @@ class Recoverability extends React.PureComponent {
     const headerTxt = `History is${violations.length > 0 ? ' not ': ' '} strict.`;
 
     const makeViolation = (curr, idx) => {
-      const isStrict = curr.recoverable_value === 'IS_STRICT';
+      const isStrict = curr.strict_value === 'IS_STRICT';
 
       const cxs = {};
       cxs[styles['Recoverability-Violations-Result-List-Item']] = true

@@ -31,7 +31,7 @@ class RecoveryResult:
         if self.strict_value is RecoverableValue.NOT_AVAILABLE:
             return None
         
-        return '{0} {1} {2} and T{3} {4} {5}.'.format(
+        return '{0} {1} {2} and Transaction {3} {4} {5}.'.format(
             self.dep_op.format_pretty(), 
             'overwrites' if self.dep_op.is_write() else 'reads from',
             self.read_from_op.format_pretty(),
@@ -44,11 +44,11 @@ class RecoveryResult:
         if self.aca_value is RecoverableValue.NOT_AVAILABLE:
             return None
 
-        return '{0} reads from {1} and T{2} {3} {4}.'.format(
+        return '{0} reads from {1} and Transaction {2} {3} {4}.'.format(
             self.dep_op.format_pretty(), 
             self.read_from_op.format_pretty(),
             self.read_from_op.transaction.id, 
-            'commits' if self.aca_value is RecoverableValue.IS_ACA else 'does not commit before',
+            'commits before' if self.aca_value is RecoverableValue.IS_ACA else 'does not commit before',
             self.dep_op.format_pretty(), 
         )
 
