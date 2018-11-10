@@ -19,7 +19,7 @@ class ScheduleDisplay extends React.PureComponent {
     const isLastItem = (idx === (this.props.schedule.length - 1));
 
     return (
-      <div className={ styles['ScheduleDisplay-Op'] }>
+      <div className={ styles['ScheduleDisplay-Op'] } key={ idx }>
         <span className={ styles['ScheduleDisplay-Op-type'] }>{item.operation_type.toLowerCase()}</span>
         <span className={ styles['ScheduleDisplay-Op-tx'] }>{item.transaction_id}</span>
         { item.data_item && <span className={ styles['ScheduleDisplay-Op-data'] }>{item.data_item}</span> }

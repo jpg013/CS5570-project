@@ -26,6 +26,40 @@ class App extends React.PureComponent {
     this.onChanges = this.onChanges.bind(this);
   }
 
+  async requestHistoryBuilder(input) {
+    if (this.state.schedule.status !== 'edit') {
+      return
+    }
+
+    this.setState(prevState => {
+      return {
+        ...prevState,
+        schedule: {
+          ...prevState.schedule,
+          status: 'building',
+        }
+      }
+    });
+
+    try {
+      const { data: history } = await axios.post('/build_history', { input });
+
+      this.setState(prevState => {
+        return {
+          ...prevState,
+          history,
+          schedule: {
+            ...prevState.schedule,
+            status: 'waiting',
+            value: history.schedule,
+          }
+        };
+      })
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
   async fetchGeneratedHistory() {
     this.setState(prevState => {
       return {
@@ -80,8 +114,12 @@ class App extends React.PureComponent {
     })
   }
 
-  onChanges() {
+  onChanges(input) {
+    if (!input) {
+      return;
+    }
 
+    this.requestHistoryBuilder(input);
   }
 
   render() {

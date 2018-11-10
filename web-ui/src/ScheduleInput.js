@@ -21,16 +21,15 @@ class ScheduleInput extends React.PureComponent {
 
   constructor(props) {
     super(props);
-
-    this.onTextAreaBlur = this.onTextAreaBlur.bind(this);
-  }
-
-  onTextAreaBlur() {
-
   }
 
   renderTextArea() {
-    return <TextArea defaultVal={ transformScheduleToText(this.props.schedule) }  />
+    return (
+      <TextArea
+        defaultVal={ transformScheduleToText(this.props.schedule) }
+        onBlur={ this.props.onChanges }
+        />
+    )
   }
 
   renderDisplay() {
@@ -38,10 +37,12 @@ class ScheduleInput extends React.PureComponent {
       return null;
     }
 
-    return <ScheduleDisplay
-      schedule={ this.props.schedule }
-      onClick={ this.props.onEdit }
-      />
+    return (
+      <ScheduleDisplay
+        schedule={ this.props.schedule }
+        onClick={ this.props.onEdit }
+        />
+    )
   }
 
   render() {

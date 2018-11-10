@@ -6,6 +6,7 @@ import styles from './TextArea.module.css';
 class TextArea extends React.PureComponent {
   static propTypes = {
     defaultVal: PropTypes.string,
+    onBlur: PropTypes.func.isRequired
   }
 
   constructor(props) {
@@ -16,6 +17,8 @@ class TextArea extends React.PureComponent {
     this.inputRef = React.createRef();
 
     this.onInput = this.onInput.bind(this);
+    this.onChanges = this.onChanges.bind(this);
+    this.onKeyPress = this.onKeyPress.bind(this);
   }
 
   componentDidMount() {
@@ -31,10 +34,28 @@ class TextArea extends React.PureComponent {
     this.areaSizeRef.current.innerHTML = this.inputRef.current.value + '\n';
   }
 
+  onChanges() {
+    return this.props.onBlur(this.inputRef.current.value);
+  }
+
+  onKeyPress(e) {
+    if (e && e.which === 13) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.inputRef.current.blur();
+    }
+  }
+
   render() {
     return (
       <div className={ styles['TextArea-Container'] } ref={ this.containerRef }>
-        <textarea className={ styles['TextArea'] } onInput={ this.onInput } ref={ this.inputRef } />
+        <textarea
+          onKeyPress={ this.onKeyPress }
+          className={ styles['TextArea'] }
+          onBlur={ this.onChanges }
+          onInput={ this.onInput }
+          ref={ this.inputRef }
+          />
         <div className={ styles['TextArea-Size'] } ref={ this.areaSizeRef }></div>
       </div>
     )
