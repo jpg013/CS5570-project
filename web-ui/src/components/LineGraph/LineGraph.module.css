@@ -1,0 +1,100 @@
+.LineGraph-Container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  width: 600px;
+  padding: 50px 0;
+  position: relative;
+}
+
+.LineGraph-Legend {
+  position: absolute;
+  top: -30px;
+  right: -150px;
+  background: transparent;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.LineGraph-Legend-Item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 10px;
+}
+
+.LineGraph-Legend-Item-Label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .5px;
+  color: #717274;
+  margin-left: 5px;
+}
+
+.LineGraph-Legend-Item-RC {
+  background: #008952;
+  height: 10px;
+  width: 20px;
+  border-radius: 5px;
+}
+
+.LineGraph-Legend-Item-ACA {
+  background: #0576b9;
+  height: 10px;
+  width: 20px;
+  border-radius: 5px;
+}
+
+.LineGraph-Legend-Item-ST {
+  background: #ff9000;
+  height: 10px;
+  width: 20px;
+  border-radius: 5px;
+}
+
+
+.LineGraph-Line {
+  fill: none;
+  stroke: #008952;
+  stroke-width: 3;
+}
+
+.LineGraph-Line-rc {
+  stroke: #008952;
+}
+
+.LineGraph-Line-aca {
+  stroke: #0576b9;
+}
+
+.LineGraph-Line-st {
+  stroke: #ff9000;
+}
+
+.LineGraph-Axes-Label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  color: #717274;
+}
+
+.LineGraph-Axes-Tick {
+  text-align: left;
+  font-size: 13px;
+  color: #717274;
+  font-weight: 700;
+}
+
+.LineGraph-Axes-Tick-y {
+  position: relative;
+}
+
+.LineGraph-Axes-Tick-y::before {
+  font-size: 13px;
+  color: #717274;
+  font-weight: 700;
+  content: 'before'
+}

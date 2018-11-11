@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import ClickRipple from './components/ClickRipple';
 import Recoverability from './Recoverability';
+import Graphs from './Graphs';
 import styles from './ResultsDashboard.module.css';
 
 class ResultsDashboard extends React.PureComponent {
@@ -30,11 +31,6 @@ class ResultsDashboard extends React.PureComponent {
             <ClickRipple />
           </div>
 
-          <div className={ this.configureTopTabCxs('serializability') } onClick={ () => this.props.onSelectTab('serializability') }>
-            Serializability
-            <ClickRipple />
-          </div>
-
           <div className={ this.configureTopTabCxs('graphs') } onClick={ () => this.props.onSelectTab('graphs') }>
             Graphs
             <ClickRipple />
@@ -42,6 +38,7 @@ class ResultsDashboard extends React.PureComponent {
         </div>
         <div className={ styles['ResultsDashboard-Body'] }>
           { this.props.selectedTab === 'recoverability' && <Recoverability history={ this.props.history} /> }
+          { this.props.selectedTab === 'graphs' && <Graphs history={ this.props.history } /> }
         </div>
       </div>
     );

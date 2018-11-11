@@ -7,6 +7,7 @@ from data_generation import DataGeneration
 from history import History
 from history_query_builder import HistoryQueryBuilder
 from recovery_engine import RecoveryEngine
+from build_graphs import build_graphs
 import os
 import json
 
@@ -30,6 +31,10 @@ def serve(path):
     else:
         return send_from_directory('web-ui/build', 'index.html')
 
+@app.route('/health')
+def health():
+    return "Healthy!", 200
+
 @app.route('/generate_history')
 def generate_history():
     data_generation = DataGeneration()
@@ -42,7 +47,7 @@ def build_history():
     try:
         history = HistoryQueryBuilder(request.json['input']).process()
         return jsonify(history.serialize()), 200
-    except Exception as e:
+    except:
         resp = {}
         resp['message'] = 'error'
         return jsonify(resp), 500
@@ -54,7 +59,17 @@ def get_recovery():
         recovery_engine = RecoveryEngine(history)
         report = recovery_engine.get_report()
         return jsonify(report.serialize()), 200
-    except Exception as e:
+    except:
+        resp = {}
+        resp['message'] = 'error'
+        return jsonify(resp), 500
+
+@app.route('/generate_graphs', methods=['GET'])
+def get_graphs():
+    try:
+        results = build_graphs()
+        return jsonify(results), 200
+    except:
         resp = {}
         resp['message'] = 'error'
         return jsonify(resp), 500

@@ -200,6 +200,15 @@ class RecoveryReport:
     def is_strict(self):
         return all(item.strict_value is RecoverableValue.IS_STRICT for item in self.recovery_results)
 
+    def is_not_recoverable(self):
+        return any(item.recoverable_value is RecoverableValue.IS_NOT_RECOVERABLE for item in self.recovery_results)
+
+    def is_not_aca(self):
+        return any(item.aca_value is RecoverableValue.IS_NOT_ACA for item in self.recovery_results)    
+    
+    def is_not_strict(self):
+        return any(item.strict_value is RecoverableValue.IS_NOT_STRICT for item in self.recovery_results)    
+
     def recovery_results_available(self):
         return len(self.recovery_results) > 0
 
