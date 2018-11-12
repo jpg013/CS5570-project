@@ -11,7 +11,7 @@ class ReadFromRelationship:
     recoverable, aca and strict properties.
     """
 
-    def __init__(self, dependent_operation, read_from_operation):
+    def __init__(self, dependent_operation, read_from_operation, dep_tx_commit_order, read_tx_commit_order):
         if dependent_operation is None:
             raise Exception('dependent_operation must be defined.')
 
@@ -25,6 +25,8 @@ class ReadFromRelationship:
         self.recoverable_value = None
         self.aca_value = None
         self.strict_value = None
+        self.dep_tx_commit_order = dep_tx_commit_order
+        self.read_tx_commit_order = read_tx_commit_order
 
 class RecoveryEngine:
     """RecoveryEngine class. Given a history will determine whether or not
@@ -161,8 +163,6 @@ class RecoveryEngine:
         3) if there is some wk(x) such that wj(x) < wk(x) < ri(x), then ak < ri(x)
         """
         
-        violations = []
-
         # Schedule slice
         schedule = self.history.schedule[0:]
 
@@ -214,4 +214,9 @@ class RecoveryEngine:
                 continue
 
             # There exists a read from relation. Add to the set.
-            self.read_from_relationship_set.add(ReadFromRelationship(dep_op, read_from_op))
+            self.read_from_relationship_set.add(ReadFromRelationship(
+                dep_op, 
+                read_from_op,
+                self.tx_completed_order[dep_op.transaction.id],
+                self.tx_completed_order[read_from_op.transaction.id]
+            ))

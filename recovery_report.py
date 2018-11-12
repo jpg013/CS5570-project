@@ -9,12 +9,14 @@ class RecoveryResult:
         self.recoverable_value = read_from_relationship.recoverable_value
         self.strict_value = read_from_relationship.strict_value
         self.aca_value = read_from_relationship.aca_value
+        self.dep_tx_commit_order = read_from_relationship.dep_tx_commit_order
+        self.read_tx_commit_order = read_from_relationship.read_tx_commit_order
 
     def get_recoverable_msg(self):
         if self.recoverable_value is RecoverableValue.NOT_AVAILABLE:
             return None
 
-        is_recoverable = self.recoverable_value is RecoverableValue.IS_RECOVERABLE
+        precedence = 'before' if self.dep_tx_commit_order < self.read_tx_commit_order else 'after'
         
         return '{0} {1} {2} and Transaction {3} {4} {5} Transaction {6} {7}.'.format(
             self.dep_op.format_pretty(), 
@@ -22,7 +24,7 @@ class RecoveryResult:
             self.read_from_op.format_pretty(),
             self.dep_op.transaction.id, 
             self.dep_op.transaction.commit_type().name.lower() + 's', 
-            'after' if is_recoverable else 'before',
+            precedence,
             self.read_from_op.transaction.id,
             self.read_from_op.transaction.commit_type().name.lower() + 's'
         )
