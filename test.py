@@ -2,7 +2,6 @@
 from graphics import *
 from history import History
 from history_query_builder import HistoryQueryBuilder
-from data_generation import generate_transactions
 from main import checks
 from serialization_graphics import drawSerializationGraph
 from math import floor
