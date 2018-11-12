@@ -25,7 +25,7 @@ def transformText(text):
         ret += char
         if char == '\n':
             i = 0
-        if i == 100:
+        if i == 150:
             ret += '\n'
             i = 0
         i += 1
@@ -37,9 +37,9 @@ def transformText(text):
 
 wind = GraphWin("concurency control manager",1100,900)
 
-inp = Entry(Point(650,600),40)
+inp = Entry(Point(650,100),40)
 inp.draw(wind)
-repText = Text(Point(650,300),"")
+repText = Text(Point(550,400),"")
 repText.draw(wind)
 
 graphics = None
@@ -57,19 +57,22 @@ while True:
             serOrNot = ret[1][0]
             conflicts = ret[1][1]
             graphics = drawSerializationGraph(wind,hist,conflicts)
+            
             repString = rep.give_report()
             if(serOrNot):
                 repString += "The history is serializable"
             else:
                 repString += "The history is not serializable"
+            
             formatRepString = transformText(repString)
             print(formatRepString)
             repText.setText(formatRepString)
             
+            
         except Exception as e:
             print(e)
-            repText.setText(e)
-
+            #repText.setText(e)
+#r1[x] w1[x] r2[x] w2[x] r1[x] c1 c2
 
 
 

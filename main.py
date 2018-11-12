@@ -46,7 +46,7 @@ def main():
     checks(not_serializable_hist)
     
 if __name__== "__main__":
-    #main()
+    main()
 
     hist = HistoryQueryBuilder('w1231[q] r11[r] a231 c11').process()
     checks(hist)
