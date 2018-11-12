@@ -1,0 +1,57 @@
+.ScheduleDisplay {
+  padding: 20px 30px;
+  border: 1px solid #e8e8e8;
+  color: #2c2d30;
+  border-left-width: 5px;
+  margin: 0 auto 1rem;
+  border-radius: .25rem;
+  border-left-color: #008952;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.12);
+  background: #FFFFFF;
+}
+.ScheduleDisplay:hover {
+  box-shadow: 0 1px 4px rgba(0,0,0,.15);
+}
+
+.ScheduleDisplay-Op {
+  line-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ScheduleDisplay-Op svg {
+  padding: 0 10px;
+  fill: #0576b9;
+  height: 32px;
+  width: 32px;
+  position: relative;
+}
+
+.ScheduleDisplay-Op-type {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: .7px;
+}
+
+.ScheduleDisplay-Op-tx {
+  padding: 0 3px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  color: #717274;
+  position: relative;
+  top: 5px;
+}
+
+.ScheduleDisplay-Op-data {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+}

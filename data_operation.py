@@ -80,3 +80,10 @@ class DataOperation:
 
   def print_pretty(self):
     print(self.format_pretty(), end="")
+
+  def serialize(self):
+      return {
+        'operation_type': self.operation_type.name,
+        'transaction_id': self.transaction.id,
+        'data_item': self.data_item
+      }

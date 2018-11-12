@@ -1,0 +1,34 @@
+.Spinner {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.Spinner::after,
+.Spinner::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border: 6px solid #ddd;
+  border-radius: 50%;
+  display: block;
+}
+
+.Spinner::after {
+  content: "";
+  border-radius: 50%;
+  border-color: #0576b9;
+  border-left-color: transparent;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% {
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

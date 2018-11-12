@@ -1,0 +1,19 @@
+.Graphs {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 30px;
+}
+
+.Graphs-Container {
+  display: block;
+  width: 100%;
+}
+
+.Graphs-Chart {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 100px 0;
+}

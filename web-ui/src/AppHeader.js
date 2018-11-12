@@ -21,7 +21,7 @@ const appHeader = () => {
           <span>Project Information</span>
         </Link>
 
-        <a target="_blank" href="https://github.com/jpg013/concurrency-control-manager" className={ styles['appHeader-options-link'] }>
+        <a target="_blank" rel="noopener noreferrer" href="https://github.com/jpg013/concurrency-control-manager" className={ styles['appHeader-options-link'] }>
           <GithubIcon />
           <span>Source Code</span>
         </a>

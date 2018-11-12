@@ -60,6 +60,9 @@ class Transaction:
             else:
                 print("")
 
-
-            
+    def serialize(self):
+        return {
+            'id': self.id,
+            'data_operations': list(map(lambda x: x.serialize(), self.data_operations)),
+        }
         

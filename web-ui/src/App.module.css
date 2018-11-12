@@ -1,0 +1,65 @@
+.App {
+  top: 64px;
+  position: relative;
+}
+
+.App-container {
+  position: relative;
+  top: 0;
+  padding: 30px;
+  background: transparent;
+  display: block;
+}
+
+.App-banner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.App-banner-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.App-banner-actions-first {
+  margin-right: 20px;
+}
+
+.App-banner-icon {
+  height: 34px;
+  width: 34px;
+}
+
+.App-banner-title {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: .7;
+  padding-left: 10px;
+}
+
+.App-banner-icon svg {
+  fill: #008952;
+}
+
+.App-banner-actions-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 16px;
+}
+
+.App-banner-actions-label span {
+  color: #717274;
+  font-size: 14px;
+  line-height: 1.33333333;
+}
+
+.App-banner-actions-label svg {
+  fill: #717274;
+  height: 18px;
+  width: 18px;
+  margin-left: 3px;
+}
