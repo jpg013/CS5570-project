@@ -1,0 +1,11 @@
+w1[x] r[2]x w2[x] w1[x] c1 c2
+
+r1[x] w1[x] r2[x] c1 c2
+
+Notes from professor
+
+r1[x] r[2]x c1 c2 - it is recoverable. no aca, no reads from
+
+r1[x] r2[x] a1 c2 - it is recoverable
+
+You must have a conflict to talk about read/write

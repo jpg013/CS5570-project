@@ -2,14 +2,14 @@ import random
 from enum import Enum
 
 class OperationType(Enum):
-  READ   = "READ"
-  WRITE  = "WRITE"
-  COMMIT = "COMMIT"
-  ABORT  = "ABORT"
+    READ   = "READ"
+    WRITE  = "WRITE"
+    COMMIT = "COMMIT"
+    ABORT  = "ABORT"
 
-  @classmethod
-  def has_value(cls, value):
-    return any(value == item for item in cls)
+    @classmethod
+    def has_value(cls, value):
+        return any(value == item for item in cls)
 
 type_switcher = {
   0: OperationType.READ,
@@ -79,7 +79,7 @@ class DataOperation:
       return formatted_item
 
   def print_pretty(self):
-    print(self.format_pretty(), end="")
+        print(self.format_pretty(), end="")
 
   def serialize(self):
       return {

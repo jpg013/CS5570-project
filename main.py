@@ -20,7 +20,7 @@ def checks(hist):
     return (report, temp)
 
 def main():
-    input_str = "w1[y] w3[x] w1[x] r1[y] r1[x] c1 c3"
+    input_str = "w1[x] r2[x] w2[x] w1[x] c1 c2"
     history = HistoryQueryBuilder(input_str).process()
     recovery_engine = RecoveryEngine(history)
     report = recovery_engine.get_report()
