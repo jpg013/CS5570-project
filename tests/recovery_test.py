@@ -1,3 +1,4 @@
+'''
 import unittest
 from history import History
 from history_query_builder import HistoryQueryBuilder
@@ -50,4 +51,4 @@ class RecoveryTest (unittest.TestCase):
 if __name__ == '__main__':
   unittest.main()
 
-  
+'''

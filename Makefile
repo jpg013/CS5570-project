@@ -1,8 +1,7 @@
 # Makfile for project
 
 run:
-	python3 main.py
+	python main.py
 
 test:
-	python3 -m unittest discover -s ./tests -p '*_test.py'	
-
+	python -m unittest discover -s ./tests -p '*_test.py'

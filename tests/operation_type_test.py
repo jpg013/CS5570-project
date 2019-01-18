@@ -1,5 +1,5 @@
 import unittest
-from data.operation_type import OperationType, type_switcher
+from operation_type import OperationType, type_switcher
 
 class OperationTypeTest(unittest.TestCase):
     def test_attributes(self):

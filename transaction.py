@@ -1,5 +1,6 @@
 import random
 from data_operation import DataOperation
+import json
 
 class Transaction:
     """ Transaction class represents the main component model in concurrency control. It contains a list 
@@ -7,6 +8,9 @@ class Transaction:
     last data item must always be either the commit or abort operation. """
   
     def __init__(self, id):
+        if not isinstance(id, int):
+            raise ValueError('id must be of type int')
+        
         self.data_operations = []
         self.id = id
 
@@ -50,21 +54,24 @@ class Transaction:
         """Helper method to append a data operation to the transaction operation list."""
         self.data_operations.append(data_operation)
         
-    def print_pretty(self):
+    def to_string(self):
         """Helper method for printing out the transaction to stdout""" 
+        str_val = 'T{0}'.format(self.id)
+        
         for op in self.data_operations:
-            op.print_pretty()
+            str_val += op.to_string()
 
             if op is not self.data_operations[-1]:
-                print(" --> ", end="")
-            else:
-                print("")
+                str_val += ' --> '
+                
+        return str_val
 
-    
-
-    def serialize(self):
-        return {
+    def to_json(self):
+        json_dict = {
             'id': self.id,
-            'data_operations': list(map(lambda x: x.serialize(), self.data_operations)),
+            'data_operations': list(map(lambda x: x.to_json(), self.data_operations)),
         }
+
+        return json.dumps(json_dict)
+    
         

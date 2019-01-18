@@ -1,8 +1,8 @@
 import re
-from data_operation import OperationType, DataOperation
+from data_operation import DataOperation
+from operation_type import OperationType
 from transaction import Transaction
 from history import History
-from app_config import AppConfig
 
 class HistoryQueryBuilder:
     """HistoryQueryBuilder is responsible for string query inputs of data operation and producing 
@@ -24,7 +24,7 @@ class HistoryQueryBuilder:
     
         self.tokens = self.query.split()
 
-    def process(self):
+    def build(self):
         data_operations = []
         transaction_dict = {}
 
@@ -34,7 +34,7 @@ class HistoryQueryBuilder:
         
             operation_type = self.parse_operation_type(t)
             transaction_id = self.parse_transaction_id(t)
-            
+
             data_item = None
 
             if (operation_type is OperationType.READ or operation_type is OperationType.WRITE):
@@ -45,7 +45,7 @@ class HistoryQueryBuilder:
             
             tx = transaction_dict[transaction_id]
 
-            data_operation = DataOperation(operation_type, tx, data_item)
+            data_operation = DataOperation(operation_type, tx.id, data_item)
             data_operations.append(data_operation)
             tx.add_data_operation(data_operation)
 
