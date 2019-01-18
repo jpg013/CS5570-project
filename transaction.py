@@ -6,8 +6,13 @@ class Transaction:
     """ Transaction class represents the main component model in concurrency control. It contains a list 
     of data_items and a unique integer id. The data_items contained are a sequence of reads/writes and the 
     last data item must always be either the commit or abort operation. """
+    id_counter = 0
   
-    def __init__(self, id):
+    def __init__(self, id=None):
+        if id is None:
+            Transaction.id_counter += 1
+            id = Transaction.id_counter
+        
         if not isinstance(id, int):
             raise ValueError('id must be of type int')
         
@@ -15,7 +20,7 @@ class Transaction:
         self.id = id
 
     def commit_type(self):
-        """Returns the operation_type for the transaction commit/abort operatoin"""
+        """Returns the operation_type for the transaction commit/abort operation"""
         commit_op = next(x for x in self.data_operations if x.is_abort() or x.is_commit() )
         return commit_op.operation_type if commit_op is not None else None
 
