@@ -41,9 +41,6 @@ class Transaction:
         abort_or_commit_found = False
         
         for op in self.data_operations:
-            if op.transaction.id is not self:
-                raise Exception('transaction contains a data operation corresponding to different transaction')
-
             if op.is_abort() or op.is_commit():
                 if abort_or_commit_found is True:
                     raise Exception('transaction contains multiple commits/aborts')
@@ -57,14 +54,17 @@ class Transaction:
 
     def add_data_operation(self, data_operation):
         """Helper method to append a data operation to the transaction operation list."""
+        if not isinstance(data_operation, DataOperation):
+            raise Exception('invalid data_operation type. Must be DataOperation instance')
+ 
         self.data_operations.append(data_operation)
         
     def to_string(self):
         """Helper method for printing out the transaction to stdout""" 
-        str_val = 'T{0}'.format(self.id)
+        str_val = ''
         
         for op in self.data_operations:
-            str_val += op.to_string()
+            str_val += 'T{0}_{1}'.format(self.id, op.to_string())
 
             if op is not self.data_operations[-1]:
                 str_val += ' --> '

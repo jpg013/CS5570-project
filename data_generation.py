@@ -37,7 +37,7 @@ class DataGeneration():
         # Generate random number of transactions with data items
         transaction_cardinality = self.get_transaction_cardinality()
         transactions = []
-
+        
         for idx in range(transaction_cardinality):
             tx = Transaction(idx+1)
             

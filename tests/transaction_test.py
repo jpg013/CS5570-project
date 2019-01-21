@@ -22,6 +22,12 @@ class TransactionTest(unittest.TestCase):
         
         self.assertEqual(Transaction.id_counter, 5)
 
+    def test_add_invalid_data_operation(self):
+        tx = Transaction(1)
+
+        #with self.assertRaises(Exception) as context:
+          #  tx.add_data_operation("test")
+
     def test_validate_no_ops(self):
         tx = Transaction(1)
 
@@ -31,9 +37,13 @@ class TransactionTest(unittest.TestCase):
         self.assertEqual('transaction must have at least one read/write data operation and one abort/commit operation', str(context.exception))
 
     def test_validate_no_commit_abort(self):
-        print(data_generator.make_data_read_operation())                                                                                                                                                                                     
-        print('hi')
-    
-    
+        tx = Transaction(1)
+        tx.add_data_operation(data_generator.make_data_read_operation())
+        
+        with self.assertRaises(Exception) as context:
+            tx.validate()
+       
+        self.assertEqual('transaction must have at least one read/write data operation and one abort/commit operation', str(context.exception))                                                                                                                                                                             
+
 if __name__ == '__main__':
     unittest.main()
