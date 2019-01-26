@@ -2,6 +2,19 @@ import random
 from data_operation import DataOperation
 import json
 
+class TransactionGenerator:
+    """TransactionGenerator class exposes two methods to sequentially returns each 
+    data operation of the transaction until exhausted"""
+
+    def __init(self, ops=[]):
+        self.ops = ops
+
+    def next(self):
+        return self.ops.pop(0)
+
+    def is_exhausted(self):
+        return len(self.ops) == 0
+
 class Transaction:
     """ Transaction class represents the main component model in concurrency control. It contains a list 
     of data_items and a unique integer id. The data_items contained are a sequence of reads/writes and the 
@@ -52,10 +65,28 @@ class Transaction:
 
         return True
 
+    def is_transaction_terminated(self):
+        """Returns True if a commit/abort exists in the data_operations, else False"""
+        return any(op.is_commit() or op.is_abort() for op in self.data_operations) 
+
+    def can_add_data_operation(self, op):
+        """Returns True if operation can be added to transaction, else False."""
+
+        if op.transaction_id != self.id:
+            return False
+        
+        if op.is_read() or op.is_write():
+            return True
+
+        return not self.is_transaction_terminated()
+
     def add_data_operation(self, data_operation):
         """Helper method to append a data operation to the transaction operation list."""
         if not isinstance(data_operation, DataOperation):
-            raise Exception('invalid data_operation type. Must be DataOperation instance')
+            raise Exception('invalid data_operation type. Must be DataOperation instance.')
+
+        if not self.can_add_data_operation(data_operation):
+            raise Exception('cannot add data_operation {0}'.format(data_operation.to_string()))
  
         self.data_operations.append(data_operation)
         
@@ -78,5 +109,6 @@ class Transaction:
         }
 
         return json.dumps(json_dict)
-    
-        
+
+    def make_generator(self):
+        return TransactionGenerator(self.data_operations.copy())

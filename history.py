@@ -1,7 +1,5 @@
 from transaction import Transaction
 import random
-from app_config import AppConfig
-import sys
 
 class History:
     """History class as defined in concurrency control and recovery. A complete history is a sequence of interleaved 
@@ -34,20 +32,20 @@ class History:
             else:
                 print("")
 
-    def format_pretty(self):
+    def to_string(self):
         """Same as print_pretty but returns a string and doesn't print to stdout"""
-        format = ""
+        str_val = ""
         
         for item in self.schedule:
-            format += item.format_pretty()
+            str_val += item.format_pretty()
 
             if item is not self.schedule[-1]:
-                format +=  " --> "
+                str_val +=  " --> "
             
 
-        return format
+        return str_val
 
-    def serialize(self):
+    def to_json(self):
         return {
             'transactions': list(map(lambda x: x.serialize(), self.transactions)),
             'schedule': list(map(lambda x: x.serialize(), self.schedule)),
@@ -58,12 +56,15 @@ class History:
         if len(self.transactions) == 0:
             raise ValueError('transactions must have length')
 
-        ops = []
+        generators = []
 
         for tx in self.transactions:
-            ops = ops + tx.data_operations
+            generators = generators + tx.make_generator()
 
-        random.shuffle(ops)
+        # Shuffle randomly
+        random.shuffle(generators)
+
+        # has_more:
 
         while len(ops) > 0:
             op = ops.pop(0)

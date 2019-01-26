@@ -1,19 +1,19 @@
-default_tx_count = {
+transaction_cardinality = {
   "min": 1,
   "max": 4
 }
 
-default_data_set = set(["u", "x", "y", "z"])
+data_set_cardinality = set(["u", "x", "y", "z"])
 
 class TransactionConfig:
   __config = {
     # Number of transactions per history
-    "transaction_count": {
-      "min": default_tx_count['min'],
-      "max": default_tx_count['max']
+    "transaction_cardinality": {
+      "min": transaction_cardinality["min"],
+      "max": transaction_cardinality["max"]
     },
     # Set of allowed data items
-    "data_set": default_data_set
+    "data_set_cardinality": data_set_cardinality
   }
 
   @staticmethod
@@ -26,6 +26,6 @@ class TransactionConfig:
 
   @staticmethod
   def restore_defaults():
-    TransactionConfig.__config['transaction_count'] = default_tx_count
-    TransactionConfig.__config['data_set'] = default_data_set
+    TransactionConfig.__config['transaction_cardinality'] = transaction_cardinality
+    TransactionConfig.__config['data_set_cardinality'] = data_set_cardinality
 

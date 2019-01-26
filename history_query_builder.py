@@ -85,7 +85,4 @@ class HistoryQueryBuilder:
         data_item = data_items[0][0]
 
         return data_item
-
-
-
         

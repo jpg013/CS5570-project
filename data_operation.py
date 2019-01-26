@@ -9,7 +9,10 @@ class DataOperation:
 
     data_item = None
   
-    def __init__(self, operation_type, data_item=None):
+    def __init__(self, transaction_id, operation_type, data_item=None):
+        if not isinstance(transaction_id, int):
+            raise ValueError('transaction_id must be of type integer')
+        
         if not OperationType.has_value(operation_type):
             raise ValueError('operation_type must be of type OperationType.')
 
@@ -17,6 +20,7 @@ class DataOperation:
             raise ValueError('{} is not of enum type OperationType'.format(operation_type))
     
         self.operation_type = operation_type
+        self.transaction_id = transaction_id
 
         # If operation type is Abort/Commit it will not have associated data item
         if data_item is not None:
@@ -50,17 +54,18 @@ class DataOperation:
 
     def to_string(self):
         if self.operation_type is OperationType.READ:
-            return 'read[{0}]'.format(self.data_item)
+            return 'read_{0}[{1}]'.format(self.transaction_id, self.data_item)
         elif self.operation_type is OperationType.WRITE:
-            return 'write[{0}]'.format(self.data_item)
+            return 'write_{0}[{1}]'.format(self.transaction_id, self.data_item)
         elif self.operation_type is OperationType.ABORT:
-            return 'abort'
+            return 'abort_{0}'.format(self.transaction_id)
         elif self.operation_type is OperationType.COMMIT:
-            return 'commit'
+            return 'commit_{0}'.format(self.transaction_id)
 
     def to_json(self):
         json_dict = {
             'operation_type': self.operation_type.name,
+            'transaction_id': self.transaction_id
         }
 
         if self.data_item is not None:
