@@ -1,5 +1,7 @@
 # from history import History
 from history_query_builder import HistoryQueryBuilder
+from history import History
+import data_generator
 # from data_generation import DataGeneration
 # from recovery_engine import RecoveryEngine
 # from serializable_or_not import serializable_or_not
@@ -22,8 +24,16 @@ def checks(hist):
 '''
 
 def main():
-    input_str = "w1[x] r2[x] w2[x] w1[x] c1 c2"
-    history = HistoryQueryBuilder(input_str).build()
+    # input_str = "w1[x] r2[x] w2[x] w1[x] c1 c2"
+    # history = HistoryQueryBuilder(input_str).build()
+    # history.interleave_transaction_schedule()
+    # print(history.to_string())
+
+    h = History(data_generator.generate_history_transactions())
+    h.interleave_transaction_schedule()
+
+    print(h.to_string())
+
     # recovery_engine = RecoveryEngine(history)
     # report = recovery_engine.get_report()
     # report.display_pretty()

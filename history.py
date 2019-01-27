@@ -20,35 +20,23 @@ class History:
     def set_schedule(self, schedule):
         """Manually set the history schedule"""
         self.schedule = schedule
-        return self
-
-    def print_pretty(self):
-        """Helper method for pretty printing out the history schedule"""
-        for item in self.schedule:
-            item.print_pretty()
-
-            if item is not self.schedule[-1]:
-                print(" --> ", end="")
-            else:
-                print("")
 
     def to_string(self):
         """Same as print_pretty but returns a string and doesn't print to stdout"""
         str_val = ""
         
         for item in self.schedule:
-            str_val += item.format_pretty()
+            str_val += item.to_string()
 
             if item is not self.schedule[-1]:
                 str_val +=  " --> "
-            
 
         return str_val
 
     def to_json(self):
         return {
-            'transactions': list(map(lambda x: x.serialize(), self.transactions)),
-            'schedule': list(map(lambda x: x.serialize(), self.schedule)),
+            'transactions': list(map(lambda x: x.to_json(), self.transactions)),
+            'schedule': list(map(lambda x: x.to_json(), self.schedule)),
         }
         
     def interleave_transaction_schedule(self):
@@ -59,25 +47,15 @@ class History:
         generators = []
 
         for tx in self.transactions:
-            generators = generators + tx.make_generator()
+            generators.append(tx.new_generator())
 
         # Shuffle randomly
         random.shuffle(generators)
 
-        # has_more:
+        more = lambda: any(not g.is_exhausted() for g in generators)
+        next = lambda: random.choice(list(filter(lambda x: not x.is_exhausted(), generators))).next()
+        
+        self.schedule = []
 
-        while len(ops) > 0:
-            op = ops.pop(0)
-      
-            if op.is_abort() or op.is_commit():
-                # Require all other data operations for tx to be completed
-                in_progress = any(op.transaction is item.transaction for item in ops)
-
-                if in_progress == False:
-                    self.schedule.append(op)  
-                else:
-                    ops.append(op)
-                    random.shuffle(ops)
-            else:
-                self.schedule.append(op)
-
+        while(more()):
+            self.schedule.append(next())

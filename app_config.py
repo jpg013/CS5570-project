@@ -3,6 +3,11 @@ transaction_cardinality = {
   "max": 4
 }
 
+transaction_id_range = {
+  "min": 1,
+  "max": 1000
+}
+
 data_set_cardinality = set(["u", "x", "y", "z"])
 
 class TransactionConfig:
@@ -12,6 +17,7 @@ class TransactionConfig:
       "min": transaction_cardinality["min"],
       "max": transaction_cardinality["max"]
     },
+    "transaction_id_range": transaction_id_range,
     # Set of allowed data items
     "data_set_cardinality": data_set_cardinality
   }
@@ -26,6 +32,7 @@ class TransactionConfig:
 
   @staticmethod
   def restore_defaults():
-    TransactionConfig.__config['transaction_cardinality'] = transaction_cardinality
-    TransactionConfig.__config['data_set_cardinality'] = data_set_cardinality
+    TransactionConfig.__config["transaction_cardinality"] = transaction_cardinality
+    TransactionConfig.__config["data_set_cardinality"] = data_set_cardinality
+    TransactionConfig.__config["transaction_id_range"] = transaction_id_range
 

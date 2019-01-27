@@ -1,6 +1,7 @@
 import re
 from data_operation import DataOperation
 from operation_type import OperationType
+import data_generator
 from transaction import Transaction
 from history import History
 
@@ -45,7 +46,7 @@ class HistoryQueryBuilder:
             
             tx = transaction_dict[transaction_id]
 
-            data_operation = DataOperation(operation_type, tx.id, data_item)
+            data_operation = DataOperation(tx.id, operation_type, data_item)
             data_operations.append(data_operation)
             tx.add_data_operation(data_operation)
 

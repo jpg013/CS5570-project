@@ -6,7 +6,7 @@ class TransactionGenerator:
     """TransactionGenerator class exposes two methods to sequentially returns each 
     data operation of the transaction until exhausted"""
 
-    def __init(self, ops=[]):
+    def __init__(self, ops):
         self.ops = ops
 
     def next(self):
@@ -91,6 +91,8 @@ class Transaction:
         self.data_operations.append(data_operation)
         
     def to_string(self):
+        self.validate()
+        
         """Helper method for printing out the transaction to stdout""" 
         str_val = ''
         
@@ -110,5 +112,5 @@ class Transaction:
 
         return json.dumps(json_dict)
 
-    def make_generator(self):
+    def new_generator(self):
         return TransactionGenerator(self.data_operations.copy())
